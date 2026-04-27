@@ -1,0 +1,66 @@
+baseURL = "https://blog.pcioasis.com/"
+languageCode = "en-us"
+title = "PCI Oasis Blog"
+theme = "PaperMod"
+paginate = 10
+enableRobotsTXT = true
+buildDrafts = false
+
+[params]
+  env = "production"
+  title = "PCI Oasis Blog"
+  description = "Security research, lab writeups, and attack analysis from the PCI Oasis team."
+  author = "PCI Oasis"
+  defaultTheme = "dark"
+  disableThemeToggle = false
+  ShowReadingTime = true
+  ShowShareButtons = false
+  ShowPostNavLinks = true
+  ShowBreadCrumbs = true
+  ShowCodeCopyButtons = true
+  ShowRssButtonInSectionTermList = true
+  ShowToc = true
+  TocOpen = false
+  comments = false
+
+[params.homeInfoParams]
+  Title = "PCI Oasis Security Blog"
+  Content = "Engineering insights on e-skimming defenses, PCI compliance, and payment security — for teams building systems that handle cardholder data."
+
+[[params.socialIcons]]
+  name = "github"
+  url = "https://github.com/pci-tamper-protect/e-skimming-labs"
+
+[[params.socialIcons]]
+  name = "rss"
+  url = "/index.xml"
+
+[menu]
+  [[menu.main]]
+    identifier = "labs"
+    name = "Labs"
+    url = "https://labs.pcioasis.com"
+    weight = 10
+  [[menu.main]]
+    identifier = "tags"
+    name = "Tags"
+    url = "/tags/"
+    weight = 20
+  [[menu.main]]
+    identifier = "categories"
+    name = "Categories"
+    url = "/categories/"
+    weight = 30
+
+[taxonomies]
+  tag = "tags"
+  category = "categories"
+
+[markup.highlight]
+  noClasses = false
+  lineNos = true
+  lineNumbersInTable = true
+  style = "monokai"
+
+[markup.goldmark.renderer]
+  unsafe = true

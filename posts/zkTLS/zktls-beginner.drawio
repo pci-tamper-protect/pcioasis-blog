@@ -1,0 +1,483 @@
+<mxfile host="Electron" pages="4">
+  <diagram id="p1" name="1 — Big Picture">
+    <mxGraphModel dx="1232" dy="805" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="p1-title" parent="1" style="text;html=1;align=center;fontSize=22;fontStyle=1;strokeColor=none;fillColor=none;" value="zkTLS Income Verification — How It Works" vertex="1">
+          <mxGeometry height="36" width="1000" x="200" y="16" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-sub" parent="1" style="text;html=1;align=center;fontSize=13;fontStyle=2;strokeColor=none;fillColor=none;" value="A renter proves income to an apartment site — without sharing the salary number" vertex="1">
+          <mxGeometry height="22" width="1000" x="200" y="48" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p1-browser-frame" parent="1" style="rounded=1;fillColor=#f0f0f0;strokeColor=#333333;strokeWidth=3;" value="" vertex="1">
+          <mxGeometry height="620" width="420" x="20" y="78" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-browser-bar" parent="1" style="fillColor=#4a4a4a;strokeColor=none;fontColor=#cccccc;fontSize=11;align=left;html=1;" value="⬤  ⬤  ⬤      apartments.com/apply" vertex="1">
+          <mxGeometry height="28" width="393" x="32" y="111" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-browser-lbl" parent="1" style="text;html=1;align=center;fontSize=13;fontStyle=1;strokeColor=none;fillColor=none;" value="Jordan&#39;s Browser" vertex="1">
+          <mxGeometry height="22" width="420" x="120" y="111" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-prover-badge" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="&lt;b&gt;apartments.com income prover&lt;/b&gt;&lt;br/&gt;&lt;i style=&#39;font-size:10px&#39;&gt;Reclaim SDK — JavaScript executing in this browser tab&lt;/i&gt;" vertex="1">
+          <mxGeometry height="46" width="388" x="36" y="154" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-aptcontent" parent="1" style="text;html=1;align=center;fontSize=11;strokeColor=#aaaaaa;fillColor=#ffffff;rounded=1;" value="&lt;b&gt;Rental Application Form&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;Unit: Apt 4B — $2,400/mo&lt;br/&gt;Required income: $7,200/mo&lt;br/&gt;&lt;br/&gt;[  Verify Income  ]  ←  click" vertex="1">
+          <mxGeometry height="120" width="388" x="32" y="206" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-modal-shadow" parent="1" style="rounded=0;fillColor=#888888;strokeColor=none;opacity=30;" value="" vertex="1">
+          <mxGeometry height="240" width="304" x="84" y="332" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-modal" parent="1" style="rounded=0;fillColor=#ffffff;strokeColor=#555555;strokeWidth=2;" value="" vertex="1">
+          <mxGeometry height="240" width="300" x="80" y="326" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-modal-bar" parent="1" style="rounded=0;fillColor=#be0000;strokeColor=none;fontColor=#ffffff;fontSize=10;align=left;html=1;" value="⬤  ⬤  ⬤      adp.com — ADP MyPay modal" vertex="1">
+          <mxGeometry height="24" width="300" x="80" y="326" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-modal-lbl" parent="1" style="text;html=1;align=center;fontSize=9;fontStyle=2;strokeColor=none;fillColor=none;fontColor=#666666;" value="ADP popup modal — still inside apartments.com browser tab" vertex="1">
+          <mxGeometry height="16" width="300" x="80" y="352" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-modal-rows" parent="1" style="text;html=1;align=left;fontSize=11;strokeColor=none;fillColor=none;" value="Employee:      Jordan Smith&lt;br/&gt;Employer:      Acme Corp&lt;br/&gt;Pay Period:    Jan–Dec 2025" vertex="1">
+          <mxGeometry height="58" width="272" x="90" y="372" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-salary-hl" parent="1" style="rounded=0;fillColor=#ffff88;strokeColor=#e6b800;strokeWidth=2;opacity=70;" value="" vertex="1">
+          <mxGeometry height="30" width="288" x="84" y="434" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-salary-txt" parent="1" style="text;html=1;align=left;fontSize=13;fontStyle=1;strokeColor=none;fillColor=none;" value="Annual Salary:  $82,500" vertex="1">
+          <mxGeometry height="26" width="220" x="90" y="436" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-modal-ytd" parent="1" style="text;html=1;align=left;fontSize=11;strokeColor=none;fillColor=none;" value="YTD Gross:     $41,250" vertex="1">
+          <mxGeometry height="22" width="220" x="90" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-see2" parent="1" style="text;html=1;align=right;fontSize=9;fontStyle=2;strokeColor=none;fillColor=none;fontColor=#0000cc;" value="→ See Detail 2" vertex="1">
+          <mxGeometry height="14" width="300" x="80" y="554" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-zkbadge" parent="1" style="text;html=1;align=center;fontSize=11;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;rounded=1;" value="🔒 ZK proof runs here — WASM, in browser, private" vertex="1">
+          <mxGeometry height="26" width="388" x="36" y="578" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-zkbadge2" parent="1" style="text;html=1;align=center;fontSize=10;fontStyle=2;strokeColor=none;fillColor=none;fontColor=#555555;" value="Salary value is decrypted, checked, and discarded locally — never sent out" vertex="1">
+          <mxGeometry height="18" width="388" x="36" y="606" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-see4" parent="1" style="text;html=1;align=right;fontSize=9;fontStyle=2;strokeColor=none;fillColor=none;fontColor=#0000cc;" value="→ See Detail 4" vertex="1">
+          <mxGeometry height="14" width="388" x="36" y="626" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-a2-label" parent="1" style="text;html=1;align=center;fontSize=10;fontStyle=2;strokeColor=none;fillColor=none;" value="② user opens form, clicks Verify Income" vertex="1">
+          <mxGeometry height="18" width="388" x="36" y="648" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p1-top-label" parent="1" style="text;html=1;align=left;fontSize=10;fontStyle=2;strokeColor=none;fillColor=none;fontColor=#666666;" value="① Page fetch" vertex="1">
+          <mxGeometry height="18" width="180" x="455" y="78" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-aptsvr-top" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0a30a;strokeColor=#BD7000;fontColor=#000000;fontSize=11;" value="&lt;font style=&#39;font-size:18px&#39;&gt;🖧&lt;/font&gt;&lt;br/&gt;&lt;b&gt;apartments.com&lt;/b&gt;&lt;br/&gt;&lt;i style=&#39;font-size:10px&#39;&gt;page served&lt;/i&gt;" vertex="1">
+          <mxGeometry height="90" width="150" x="1060" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-a1req" edge="1" parent="1" style="endArrow=open;endFill=0;html=1;fontSize=11;dashed=1;align=center;verticalAlign=bottom;labelBackgroundColor=#ffffff;labelBorderColor=none;animated=1;flow=1;" value="① GET /apply">
+          <mxGeometry relative="1" y="-20" as="geometry">
+            <mxPoint x="440" y="115" as="sourcePoint" />
+            <mxPoint x="1060" y="115" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1-a1" edge="1" parent="1" style="endArrow=open;endFill=0;html=1;fontSize=11;dashed=1;align=center;verticalAlign=top;labelBackgroundColor=#ffffff;labelBorderColor=none;animated=1;flow=1;" value="② serves page + SDK JS">
+          <mxGeometry relative="1" y="8" as="geometry">
+            <mxPoint x="1060" y="155" as="sourcePoint" />
+            <mxPoint x="440" y="155" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="p1-netband" parent="1" style="rounded=1;fillColor=#e8f4ff;strokeColor=#aaccee;strokeWidth=1;opacity=60;" value="" vertex="1">
+          <mxGeometry height="230" width="570" x="450" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-netband-label" parent="1" style="text;html=1;align=right;fontSize=10;fontStyle=2;strokeColor=none;fillColor=none;fontColor=#4477aa;" value="TLS Proxy Network Path (Reclaim attestation)" vertex="1">
+          <mxGeometry height="18" width="340" x="675" y="292" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-attestor" parent="1" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" value="&lt;font style=&#39;font-size:22px&#39;&gt;☁&lt;/font&gt;&lt;br/&gt;&lt;b&gt;Attestor&lt;/b&gt;&lt;br/&gt;&lt;i style=&#39;font-size:10px&#39;&gt;Reclaim network&lt;br/&gt;TLS proxy node&lt;/i&gt;" vertex="1">
+          <mxGeometry height="140" width="200" x="570" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-see3" parent="1" style="text;html=1;align=center;fontSize=9;fontStyle=2;strokeColor=none;fillColor=none;fontColor=#0000cc;" value="→ See Detail 3" vertex="1">
+          <mxGeometry height="14" width="200" x="570" y="444" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-adp" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="&lt;font style=&#39;font-size:20px&#39;&gt;🖥&lt;/font&gt;&lt;br/&gt;&lt;b&gt;ADP Payroll Server&lt;/b&gt;&lt;br/&gt;&lt;i style=&#39;font-size:10px&#39;&gt;adp.com&lt;br/&gt;unmodified, unaware&lt;/i&gt;" vertex="1">
+          <mxGeometry height="130" width="155" x="865" y="330" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p1-c2" parent="1" style="shape=callout;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" value="&lt;b&gt;Attestor sees:&lt;/b&gt;&lt;br/&gt;a8f3 c2b4 9e41...&lt;br/&gt;&lt;i&gt;(encrypted, unreadable)&lt;/i&gt;" vertex="1">
+          <mxGeometry height="68" width="200" x="565" y="210" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p1-a3-lbl" parent="1" style="text;html=1;align=center;fontSize=11;strokeColor=none;fillColor=none;labelBackgroundColor=none;" value="③ TLS session&lt;br/&gt;(encrypted bytes)" vertex="1">
+          <mxGeometry height="30" width="140" x="435" y="322" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-a3" edge="1" parent="1" style="endArrow=open;endFill=0;html=1;fontSize=11;dashed=1;align=center;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;animated=1;flow=1;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="440" y="362" as="sourcePoint" />
+            <mxPoint x="570" y="362" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1-a4" edge="1" parent="1" style="endArrow=open;endFill=0;html=1;fontSize=11;dashed=1;align=center;verticalAlign=bottom;labelBackgroundColor=#ffffff;labelBorderColor=none;animated=1;flow=1;" value="④ forward request">
+          <mxGeometry relative="1" y="-20" as="geometry">
+            <mxPoint x="770" y="368" as="sourcePoint" />
+            <mxPoint x="865" y="368" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1-a5" edge="1" parent="1" style="endArrow=open;endFill=0;html=1;fontSize=11;dashed=1;align=center;verticalAlign=top;labelBackgroundColor=#ffffff;labelBorderColor=none;animated=1;flow=1;" value="⑤ enc_resp">
+          <mxGeometry relative="1" y="8" as="geometry">
+            <mxPoint x="865" y="408" as="sourcePoint" />
+            <mxPoint x="770" y="408" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1-a6" edge="1" parent="1" style="endArrow=open;endFill=0;html=1;fontSize=11;dashed=1;align=center;verticalAlign=top;labelBackgroundColor=#ffffff;labelBorderColor=none;animated=1;flow=1;" value="⑥ enc_resp&#xa;+ commitment">
+          <mxGeometry relative="1" y="8" as="geometry">
+            <mxPoint x="570" y="408" as="sourcePoint" />
+            <mxPoint x="440" y="408" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="p1-bot-label" parent="1" style="text;html=1;align=left;fontSize=10;fontStyle=2;strokeColor=none;fillColor=none;fontColor=#666666;" value="⑧⑨ Proof submission &amp; approval" vertex="1">
+          <mxGeometry height="18" width="300" x="455" y="530" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-aptsvr-bot" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0a30a;strokeColor=#BD7000;fontColor=#000000;fontSize=10;" value="&lt;font style=&#39;font-size:16px&#39;&gt;🖧&lt;/font&gt;&lt;br/&gt;&lt;b&gt;apartments.com&lt;/b&gt;&lt;br/&gt;&lt;i style=&#39;font-size:9px&#39;&gt;verifies proof&lt;/i&gt;" vertex="1">
+          <mxGeometry height="80" width="140" x="1060" y="548" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-c3" parent="1" style="shape=callout;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="&lt;b&gt;Server receives:&lt;/b&gt;&lt;br/&gt;salary &gt;= $75,000: TRUE&lt;br/&gt;&lt;i&gt;(proof bytes — no salary)&lt;/i&gt;" vertex="1">
+          <mxGeometry height="90" width="200" x="1060" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="p1-a8" edge="1" parent="1" style="endArrow=open;endFill=0;html=1;fontSize=11;dashed=1;strokeColor=#BD7000;align=center;verticalAlign=bottom;labelBackgroundColor=#ffffff;labelBorderColor=none;animated=1;flow=1;" value="⑧ POST proof&#xa;(bypasses Attestor)">
+          <mxGeometry relative="1" y="-20" as="geometry">
+            <mxPoint x="440" y="585" as="sourcePoint" />
+            <mxPoint x="1060" y="585" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1-a9" edge="1" parent="1" style="endArrow=open;endFill=0;html=1;fontSize=11;dashed=1;strokeColor=#BD7000;align=center;verticalAlign=top;labelBackgroundColor=#ffffff;labelBorderColor=none;animated=1;flow=1;" value="⑨ Approved ✓">
+          <mxGeometry relative="1" y="8" as="geometry">
+            <mxPoint x="1060" y="620" as="sourcePoint" />
+            <mxPoint x="440" y="620" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="p1-detail-bar" parent="1" style="text;html=1;align=center;fontSize=11;fontStyle=2;strokeColor=#aaaaaa;fillColor=#f5f5f5;rounded=1;" value="Detail diagrams:   2 — Payroll Portal;&amp;nbsp; 3 — Attestor&#39;s View;&amp;nbsp; 4 — ZK Proof in Browser" vertex="1">
+          <mxGeometry height="24" width="820" x="233" y="736" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="p2" name="2 — Payroll Portal">
+    <mxGraphModel dx="1422" dy="762" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="780" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p2-title" value="Detail 2 — What the Renter Sees: The Payroll Portal" style="text;html=1;align=center;fontSize=18;fontStyle=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="100" y="18" width="900" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-sub" value="This cleartext data is visible to the renter in the ADP modal — but is encrypted in transit and never sent to the apartment backend" style="text;html=1;align=center;fontSize=12;fontStyle=2;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="100" y="46" width="900" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-apt-outer" value="" style="rounded=1;fillColor=#e8e8e8;strokeColor=#333333;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="600" height="640" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-apt-bar" value="⬤  ⬤  ⬤      apartments.com/apply" style="fillColor=#4a4a4a;strokeColor=none;fontColor=#cccccc;fontSize=11;align=left;html=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="600" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-apt-content" value="&lt;b style=&#39;font-size:16px&#39;&gt;Rental Application — Step 2 of 3&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;Please verify your income to continue.&lt;br/&gt;Required: 3× monthly rent = $7,200/mo&lt;br/&gt;&lt;br/&gt;Click the button below to verify your income securely." style="text;html=1;align=center;fontSize=12;strokeColor=#aaaaaa;fillColor=#ffffff;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="76" y="120" width="568" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-verifybtn" value="Verify Income with ADP" style="rounded=1;fillColor=#007bff;strokeColor=#0056b3;fontColor=#ffffff;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="200" y="256" width="260" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-modal-shadow" value="" style="rounded=1;fillColor=#666666;strokeColor=none;opacity=40;" vertex="1" parent="1">
+          <mxGeometry x="96" y="314" width="528" height="374" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-modal-outer" value="" style="rounded=1;fillColor=#ffffff;strokeColor=#444444;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="90" y="308" width="528" height="374" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-modal-bar" value="⬤  ⬤  ⬤      adp.com — MyPay Statements" style="fillColor=#be0000;strokeColor=none;fontColor=#ffffff;fontSize=11;align=left;html=1;" vertex="1" parent="1">
+          <mxGeometry x="90" y="308" width="528" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-modal-logo" value="&lt;b style=&#39;font-size:16px;color:#e00&#39;&gt;ADP&lt;/b&gt;  MyPay — Pay Statements" style="text;html=1;align=left;fontSize=13;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="106" y="342" width="400" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-divider" value="" style="line;strokeColor=#cccccc;" vertex="1" parent="1">
+          <mxGeometry x="90" y="368" width="528" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-row1" value="Employee" style="text;html=1;align=left;fontSize=12;strokeColor=none;fillColor=none;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="106" y="380" width="180" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-row1v" value="Jordan Smith" style="text;html=1;align=left;fontSize=12;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="310" y="380" width="280" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-row2" value="Employer" style="text;html=1;align=left;fontSize=12;strokeColor=none;fillColor=none;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="106" y="406" width="180" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-row2v" value="Acme Corp" style="text;html=1;align=left;fontSize=12;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="310" y="406" width="280" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-row3" value="Pay Period" style="text;html=1;align=left;fontSize=12;strokeColor=none;fillColor=none;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="106" y="432" width="180" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-row3v" value="Jan 1 – Dec 31, 2025" style="text;html=1;align=left;fontSize=12;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="310" y="432" width="280" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-salary-bg" value="" style="rounded=1;fillColor=#fffacd;strokeColor=#e6b800;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="96" y="462" width="516" height="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-salary-label" value="&lt;b&gt;Annual Salary&lt;/b&gt;" style="text;html=1;align=left;fontSize=14;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="106" y="468" width="180" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-salary-value" value="&lt;b style=&#39;font-size:18px;color:#007700&#39;&gt;$82,500&lt;/b&gt;" style="text;html=1;align=left;fontSize=14;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="310" y="465" width="180" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-row4" value="YTD Gross" style="text;html=1;align=left;fontSize=12;strokeColor=none;fillColor=none;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="106" y="514" width="180" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-row4v" value="$41,250" style="text;html=1;align=left;fontSize=12;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="310" y="514" width="180" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-row5" value="Federal Tax YTD" style="text;html=1;align=left;fontSize=12;strokeColor=none;fillColor=none;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="106" y="540" width="180" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-row5v" value="$14,210" style="text;html=1;align=left;fontSize=12;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="310" y="540" width="180" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-row6" value="Net Pay YTD" style="text;html=1;align=left;fontSize=12;strokeColor=none;fillColor=none;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="106" y="566" width="180" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-row6v" value="$27,040" style="text;html=1;align=left;fontSize=12;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="310" y="566" width="180" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-modal-note" value="&lt;i&gt;Modal popup — running inside apartments.com — Jordan never left the apartment site&lt;/i&gt;" style="text;html=1;align=center;fontSize=10;strokeColor=none;fillColor=none;fontColor=#777777;" vertex="1" parent="1">
+          <mxGeometry x="90" y="640" width="528" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-modal-close" value="&lt;font style=&#39;font-size:11px&#39;&gt;Reclaim SDK will now prove this data without sharing it&lt;/font&gt;" style="text;html=1;align=center;fontSize=11;strokeColor=#82b366;fillColor=#d5e8d4;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="90" y="662" width="528" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-ann1" value="&lt;b&gt;This highlighted row is the only field&lt;br/&gt;the ZK proof touches.&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;The proof will confirm:&lt;br/&gt;   82,500 &gt;= 75,000  →  TRUE&lt;br/&gt;&lt;br/&gt;The number $82,500 itself is&lt;br/&gt;never sent to the apartment site." style="shape=callout;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="680" y="400" width="280" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="p2-ann1-arr" value="" style="endArrow=open;endFill=0;html=1;strokeColor=#82b366;animated=1;flow=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="680" y="483" as="sourcePoint" />
+            <mxPoint x="612" y="483" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2-ann2" value="&lt;b&gt;Everything else stays private.&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;Jordan&#39;s name, employer,&lt;br/&gt;tax, YTD — none of this&lt;br/&gt;appears in the proof." style="shape=callout;whiteSpace=wrap;html=1;fillColor=#ffe9e9;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="680" y="620" width="260" height="130" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="p3" name="3 — Attestor&#39;s View">
+    <mxGraphModel dx="1422" dy="762" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="820" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p3-title" value="Detail 3 — What the Attestor Sees: Encrypted TLS Stream" style="text;html=1;align=center;fontSize=18;fontStyle=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="100" y="18" width="1000" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-sub" value="The Attestor routes traffic and records commitments — but cannot read the salary. ADP has no idea the Attestor is in the middle." style="text;html=1;align=center;fontSize=12;fontStyle=2;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="100" y="46" width="1000" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-left-title" value="What ADP sent (decrypted — for illustration only)" style="text;html=1;align=center;fontSize=13;fontStyle=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="440" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-left-sub" value="(Only Jordan&#39;s browser can see this — using the session key)" style="text;html=1;align=center;fontSize=10;fontStyle=2;strokeColor=none;fillColor=none;fontColor=#555555;" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="440" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-clear-bg" value="" style="rounded=1;fillColor=#f9fff9;strokeColor=#82b366;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="124" width="440" height="480" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-clear-text" value="HTTP/1.1 200 OK&#xa;Content-Type: text/html&#xa;&#xa;&lt;html&gt;&#xa;&lt;div class=&quot;ytd-summary&quot;&gt;&#xa;  Employee:      Jordan Smith&#xa;  Employer:      Acme Corp&#xa;  Pay Period:    Jan-Dec 2025&#xa;&#xa;  Annual Salary: $82,500&#xa;&#xa;  YTD Gross:     $41,250&#xa;  Federal Tax:   $14,210&#xa;  Net Pay YTD:   $27,040&#xa;&lt;/div&gt;&#xa;&lt;/html&gt;" style="text;html=0;align=left;fontSize=12;strokeColor=none;fillColor=none;fontFamily=Courier New;whiteSpace=pre;" vertex="1" parent="1">
+          <mxGeometry x="56" y="136" width="408" height="320" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-clear-hl" value="" style="rounded=0;fillColor=#ffff88;strokeColor=#e6b800;opacity=60;" vertex="1" parent="1">
+          <mxGeometry x="56" y="288" width="408" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-clear-arrow" value="regex matches here" style="text;html=1;align=left;fontSize=10;fontStyle=1;strokeColor=none;fillColor=none;fontColor=#cc8800;" vertex="1" parent="1">
+          <mxGeometry x="56" y="312" width="200" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-clear-note" value="Jordan can see all this data in the ADP modal.&#xa;The Reclaim SDK uses the session key (which&#xa;only Jordan has) to decrypt it for the ZK proof.&#xa;The session key never leaves the browser." style="text;html=0;align=left;fontSize=11;strokeColor=none;fillColor=none;fontFamily=Courier New;whiteSpace=pre;" vertex="1" parent="1">
+          <mxGeometry x="56" y="466" width="408" height="96" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-right-title" value="What the Attestor actually sees (TLS ciphertext)" style="text;html=1;align=center;fontSize=13;fontStyle=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="540" y="80" width="620" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-right-sub" value="(AES-GCM encrypted — Attestor cannot read any of this)" style="text;html=1;align=center;fontSize=10;fontStyle=2;strokeColor=none;fillColor=none;fontColor=#555555;" vertex="1" parent="1">
+          <mxGeometry x="540" y="100" width="620" height="18" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-enc-bg" value="" style="rounded=1;fillColor=#1a1a2e;strokeColor=#b85450;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="540" y="124" width="620" height="480" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-enc-row1" value="a8f3 2c1b 9e47 d2a5  c81f 3b9e 7a4d 2f81" style="text;html=0;align=left;fontSize=12;strokeColor=none;fillColor=none;fontColor=#88cc88;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="558" y="136" width="580" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-enc-row2" value="3c9a 5f2e b7d1 8c4a  2b7f 4e9c 1a3d 5c14" style="text;html=0;align=left;fontSize=12;strokeColor=none;fillColor=none;fontColor=#88cc88;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="558" y="160" width="580" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-enc-row3" value="8e2a 7f1b 4c5e 9a3d  2b8f 1e5c 7a4b 3f9e" style="text;html=0;align=left;fontSize=12;strokeColor=none;fillColor=none;fontColor=#88cc88;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="558" y="184" width="580" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-block1-bg" value="" style="rounded=1;fillColor=#ff9900;strokeColor=#ffcc00;strokeWidth=2;opacity=40;" vertex="1" parent="1">
+          <mxGeometry x="550" y="210" width="600" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-block1-row1" value="f2a8 b3c9 4d1e 7f3a  9b2c 5e8f 1d4a 7c3b" style="text;html=0;align=left;fontSize=12;strokeColor=none;fillColor=none;fontColor=#ffdd88;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="558" y="212" width="580" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-block1-row2" value="3f7e 9c2a 5d1b 8e4f  2c9b 7a3e 4f1d 8c5b" style="text;html=0;align=left;fontSize=12;strokeColor=none;fillColor=none;fontColor=#ffdd88;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="558" y="236" width="580" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-block1-label" value="COMMITTED BLOCK #1" style="text;html=1;align=right;fontSize=10;fontStyle=1;strokeColor=none;fillColor=none;fontColor=#ffcc00;" vertex="1" parent="1">
+          <mxGeometry x="558" y="260" width="585" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-enc-row6" value="9b3e 7c2a 4f1d 8e5b  3c9a 7f4e 1b2d 8c5a" style="text;html=0;align=left;fontSize=12;strokeColor=none;fillColor=none;fontColor=#88cc88;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="558" y="282" width="580" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-enc-row7" value="1a4f 7c2e 9d3b 5f1a  8c2b 4e9f 7a1d 3c6b" style="text;html=0;align=left;fontSize=12;strokeColor=none;fillColor=none;fontColor=#88cc88;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="558" y="306" width="580" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-enc-row8" value="6d3a 8f1c 2e9b 4a7f  5c1d 9e3b 7a4f 2c8d" style="text;html=0;align=left;fontSize=12;strokeColor=none;fillColor=none;fontColor=#88cc88;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="558" y="330" width="580" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-block2-bg" value="" style="rounded=1;fillColor=#ff9900;strokeColor=#ffcc00;strokeWidth=2;opacity=40;" vertex="1" parent="1">
+          <mxGeometry x="550" y="356" width="600" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-block2-row1" value="4b8e 2c7f 9a3d 5e1b  7c4f 8a2e 3b9d 1f5c" style="text;html=0;align=left;fontSize=12;strokeColor=none;fillColor=none;fontColor=#ffdd88;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="558" y="358" width="580" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-block2-row2" value="2e8a 4c7b 9f3d 1a5e  8b2c 6f4a 7d9e 3c1b" style="text;html=0;align=left;fontSize=12;strokeColor=none;fillColor=none;fontColor=#ffdd88;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="558" y="382" width="580" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-block2-label" value="COMMITTED BLOCK #2" style="text;html=1;align=right;fontSize=10;fontStyle=1;strokeColor=none;fillColor=none;fontColor=#ffcc00;" vertex="1" parent="1">
+          <mxGeometry x="558" y="406" width="585" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-enc-row9" value="5a1c 8f3e 2b9d 4c7a  1e6b 9f4c 3a8d 7e2b" style="text;html=0;align=left;fontSize=12;strokeColor=none;fillColor=none;fontColor=#88cc88;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="558" y="428" width="580" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-enc-row10" value="7c4a 1f8e 3d9b 6c2f  4b8a 1e5c 9d3f 2a7b" style="text;html=0;align=left;fontSize=12;strokeColor=none;fillColor=none;fontColor=#88cc88;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="558" y="452" width="580" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-enc-row11" value="9e2c 4f7a 1b8d 5c3e  6f1a 8b4d 2c9e 7a5f" style="text;html=0;align=left;fontSize=12;strokeColor=none;fillColor=none;fontColor=#88cc88;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="558" y="476" width="580" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-enc-row12" value="3b6e 9c1f 4a8d 2e7b  5f3c 1a9e 8b4d 6c2f" style="text;html=0;align=left;fontSize=12;strokeColor=none;fillColor=none;fontColor=#88cc88;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="558" y="500" width="580" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-attestor-msg" value="ATTESTOR:  I see byte streams.&#xa;           I route them and record which&#xa;           blocks were committed.&#xa;           I cannot read Annual Salary." style="text;html=0;align=left;fontSize=12;strokeColor=none;fillColor=none;fontColor=#ff8888;fontFamily=Courier New;whiteSpace=pre;" vertex="1" parent="1">
+          <mxGeometry x="558" y="534" width="580" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-ann1" value="&lt;b&gt;Committed blocks&lt;/b&gt; are the TLS record chunks&lt;br/&gt;that the Attestor records a &lt;b&gt;cryptographic hash&lt;/b&gt; of&lt;br/&gt;and co-signs with its private key.&lt;br/&gt;&lt;br/&gt;These blocks correspond to the ADP response&lt;br/&gt;region containing &quot;Annual Salary: $82,500&quot;.&lt;br/&gt;&lt;br/&gt;The Attestor doesn&#39;t know that — it just sees bytes." style="shape=callout;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="540" y="616" width="380" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="p3-ann2" value="&lt;b&gt;Jordan&#39;s browser&lt;/b&gt; uses the committed&lt;br/&gt;blocks + the session key to run the ZK proof.&lt;br/&gt;&lt;br/&gt;The session key decrypts the committed blocks.&lt;br/&gt;The ZK prover checks the salary predicate.&lt;br/&gt;&lt;br/&gt;→ See Detail 4 for the browser ZK proof." style="shape=callout;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="800" y="616" width="340" height="170" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="p4" name="4 — Browser ZK Proof">
+    <mxGraphModel dx="1422" dy="762" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="820" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p4-title" value="Detail 4 — Inside the Browser: ZK Proof Generation" style="text;html=1;align=center;fontSize=18;fontStyle=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="100" y="18" width="900" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-sub" value="All of this runs in Jordan&#39;s browser using WebAssembly — the salary value is processed locally and then discarded" style="text;html=1;align=center;fontSize=12;fontStyle=2;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="100" y="46" width="900" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-browser-outer" value="" style="rounded=1;fillColor=#e8e8e8;strokeColor=#333333;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="40" y="78" width="860" height="660" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-browser-bar" value="⬤  ⬤  ⬤      apartments.com/apply  —  [reclaim-sdk.js running]" style="fillColor=#4a4a4a;strokeColor=none;fontColor=#cccccc;fontSize=11;align=left;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="78" width="860" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-browser-inner" value="" style="fillColor=#ffffff;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="40" y="108" width="860" height="630" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-inp-title" value="INPUTS (available in browser memory)" style="text;html=1;align=center;fontSize=12;fontStyle=1;strokeColor=none;fillColor=none;fontColor=#555555;" vertex="1" parent="1">
+          <mxGeometry x="56" y="116" width="480" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-sk-box" value="🔑  session_key&lt;br/&gt;&lt;br/&gt;&lt;tt&gt;3a9f2cb1e0d47f8a...b4e1d208&lt;/tt&gt;&lt;br/&gt;&lt;br/&gt;32 bytes — TLS shared secret&lt;br/&gt;Derived during handshake.&lt;br/&gt;&lt;b&gt;Never sent anywhere.&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="56" y="142" width="220" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-er-box" value="🔒  enc_resp (committed blocks)&lt;br/&gt;&lt;br/&gt;&lt;tt&gt;f2a8 b3c9 4d1e 7f3a...&lt;br/&gt;3f7e 9c2a 5d1b 8e4f...&lt;/tt&gt;&lt;br/&gt;&lt;br/&gt;Encrypted TLS bytes from ADP.&lt;br/&gt;Attestor co-signed these blocks." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="300" y="142" width="240" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-pred-box" value="📋  predicate&lt;br/&gt;&lt;br/&gt;&lt;tt&gt;annual_salary &gt;= 75000&lt;/tt&gt;&lt;br/&gt;&lt;br/&gt;Set by apartment site when&lt;br/&gt;initializing the SDK." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="564" y="142" width="220" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-arr1" value="" style="endArrow=open;endFill=0;html=1;strokeColor=#555555;animated=1;flow=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="166" y="282" as="sourcePoint" />
+            <mxPoint x="166" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p4-arr2" value="" style="endArrow=open;endFill=0;html=1;strokeColor=#555555;animated=1;flow=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="420" y="282" as="sourcePoint" />
+            <mxPoint x="420" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p4-arr3" value="" style="endArrow=open;endFill=0;html=1;strokeColor=#555555;animated=1;flow=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="674" y="282" as="sourcePoint" />
+            <mxPoint x="674" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p4-step1" value="&lt;b&gt;Step 1: Decrypt committed blocks&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;AES-256-GCM decrypt using session_key:&lt;br/&gt;&lt;br/&gt;&lt;tt&gt;plaintext = AES.decrypt(enc_resp, session_key)&lt;/tt&gt;&lt;br/&gt;&lt;br/&gt;Result: the HTML fragment containing&lt;br/&gt;&lt;b&gt;&quot;Annual Salary: $82,500&quot;&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f9ffe9;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="56" y="320" width="380" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-arr4" value="" style="endArrow=open;endFill=0;html=1;strokeColor=#555555;animated=1;flow=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="246" y="480" as="sourcePoint" />
+            <mxPoint x="246" y="518" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p4-step2" value="&lt;b&gt;Step 2: Extract value with regex&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;&lt;tt&gt;/Annual Salary.*?\$([0-9,]+)/&lt;/tt&gt;&lt;br/&gt;&lt;br/&gt;Match: &quot;Annual Salary: $82,500&quot;&lt;br/&gt;Captured: &quot;82,500&quot; → integer &lt;b&gt;82500&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f9ffe9;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="56" y="518" width="380" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-arr5" value="" style="endArrow=open;endFill=0;html=1;strokeColor=#555555;animated=1;flow=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="246" y="648" as="sourcePoint" />
+            <mxPoint x="246" y="686" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p4-step3" value="&lt;b&gt;Step 3: Check predicate&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;&lt;tt&gt;82500 &gt;= 75000  →  TRUE&lt;/tt&gt;&lt;br/&gt;&lt;br/&gt;This boolean is what gets proven." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f9ffe9;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="56" y="686" width="380" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-zkbox" value="⚙️  ZK Prover (Groth16 / PLONK)&lt;br/&gt;&lt;b&gt;WebAssembly — runs in browser tab&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;Inputs:  extracted value (82500)&lt;br/&gt;         predicate (x &gt;= 75000)&lt;br/&gt;         commitment (from Attestor)&lt;br/&gt;&lt;br/&gt;Output: cryptographic proof&lt;br/&gt;that the predicate holds,&lt;br/&gt;without revealing 82500.&lt;br/&gt;&lt;br/&gt;Duration: 3–15 seconds&lt;br/&gt;CPU-intensive — WASM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1a1a2e;strokeColor=#9999ff;fontColor=#ffffff;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="498" y="320" width="290" height="310" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-arr-to-zk1" value="" style="endArrow=open;endFill=0;html=1;strokeColor=#9999ff;animated=1;flow=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="436" y="400" as="sourcePoint" />
+            <mxPoint x="498" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p4-arr-to-zk1-lbl" value="value" style="text;html=1;align=center;fontSize=9;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="438" y="386" width="60" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-arr-to-zk2" value="" style="endArrow=open;endFill=0;html=1;strokeColor=#9999ff;animated=1;flow=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="674" y="282" as="sourcePoint" />
+            <mxPoint x="643" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p4-arr-to-zk2-lbl" value="predicate" style="text;html=1;align=center;fontSize=9;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="640" y="295" width="70" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-arr-out" value="" style="endArrow=open;endFill=0;html=1;strokeColor=#9999ff;strokeWidth=2;animated=1;flow=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="643" y="630" as="sourcePoint" />
+            <mxPoint x="643" y="686" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p4-proof-out" value="✅  zk_proof output&lt;br/&gt;&lt;br/&gt;&lt;tt&gt;[0xab, 0xf2, 0x3c, ...]&lt;/tt&gt;&lt;br/&gt;~200–500 bytes&lt;br/&gt;&lt;br/&gt;Sent to apartment backend.&lt;br/&gt;Contains NO salary data." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="498" y="686" width="290" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="p4-key-msg" value="&lt;b&gt;Key point for beginners:&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;$82,500 is extracted, used in the proof calculation,&lt;br/&gt;and then discarded — all inside the browser tab.&lt;br/&gt;&lt;br/&gt;The apartment backend never sees it.&lt;br/&gt;The Attestor never sees it.&lt;br/&gt;Only Jordan sees it (in the ADP modal)." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="860" y="320" width="200" height="220" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

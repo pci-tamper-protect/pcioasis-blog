@@ -1,0 +1,308 @@
+<mxGraphModel adaptiveColors="auto" dx="1422" dy="762" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1500" math="0" shadow="0">
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+
+    <mxCell id="title" value="zkTLS Income Verification — Apartment Rental Flow" style="text;html=1;align=center;fontSize=20;fontStyle=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+      <mxGeometry x="100" y="18" width="1300" height="40" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="e-browser" value="&lt;b&gt;Renter&apos;s Browser&lt;/b&gt;&lt;br/&gt;&lt;i style=&apos;font-size:10px&apos;&gt;laptop / phone&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="40" y="72" width="160" height="52" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="e-sdk" value="&lt;b&gt;Reclaim SDK&lt;/b&gt;&lt;br/&gt;&lt;i style=&apos;font-size:10px&apos;&gt;browser JS on apt site&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="250" y="72" width="160" height="52" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="e-registry" value="&lt;b&gt;Provider Registry *&lt;/b&gt;&lt;br/&gt;&lt;i style=&apos;font-size:10px&apos;&gt;Reclaim cloud API&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1" tooltip="* THE REAL OPERATIONAL HEADACHE: When ADP redesigns their pay statements page, changes URL structure, or renames response fields, the regex in this provider template breaks silently. No error reaches the apartment site. A Reclaim developer or community contributor must detect the change, update the provider template, and redeploy — before all existing integrations stop producing valid proofs.">
+      <mxGeometry x="465" y="72" width="160" height="52" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="e-attestor" value="&lt;b&gt;Attestor Node&lt;/b&gt;&lt;br/&gt;&lt;i style=&apos;font-size:10px&apos;&gt;Reclaim network (cloud TLS proxy)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="680" y="72" width="160" height="52" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="e-adp" value="&lt;b&gt;ADP Payroll Server&lt;/b&gt;&lt;br/&gt;&lt;i style=&apos;font-size:10px&apos;&gt;adp.com — unmodified, unaware&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="895" y="72" width="160" height="52" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="e-aptsvr" value="&lt;b&gt;Apartment Backend&lt;/b&gt;&lt;br/&gt;&lt;i style=&apos;font-size:10px&apos;&gt;apartments.com server&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0a30a;strokeColor=#BD7000;fontColor=#000000;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="1110" y="72" width="160" height="52" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="ll1" value="" style="endArrow=none;dashed=1;strokeColor=#6c8ebf;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="120" y="124" as="sourcePoint"/>
+        <mxPoint x="120" y="980" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="ll2" value="" style="endArrow=none;dashed=1;strokeColor=#82b366;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="330" y="124" as="sourcePoint"/>
+        <mxPoint x="330" y="980" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="ll3" value="" style="endArrow=none;dashed=1;strokeColor=#d6b656;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="545" y="124" as="sourcePoint"/>
+        <mxPoint x="545" y="980" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="ll4" value="" style="endArrow=none;dashed=1;strokeColor=#b85450;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="760" y="124" as="sourcePoint"/>
+        <mxPoint x="760" y="980" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="ll5" value="" style="endArrow=none;dashed=1;strokeColor=#9673a6;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="975" y="124" as="sourcePoint"/>
+        <mxPoint x="975" y="980" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="ll6" value="" style="endArrow=none;dashed=1;strokeColor=#BD7000;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="1190" y="124" as="sourcePoint"/>
+        <mxPoint x="1190" y="980" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <mxCell id="s1-box" value="&lt;b&gt;① opens apartments.com/apply&lt;/b&gt;" style="text;html=1;align=center;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="154" width="160" height="22" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="s2" value="② init SDK — providerId: adp-income, predicate: annual_salary &gt;= 75000" style="endArrow=open;endFill=0;html=1;fontSize=9;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="120" y="198" as="sourcePoint"/>
+        <mxPoint x="330" y="198" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="s2-loc" value="&lt;i&gt;Browser: apply.js&lt;/i&gt;" style="text;html=1;align=left;fontSize=9;strokeColor=#82b366;fillColor=#f9ffe9;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="1300" y="189" width="130" height="18" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="s3" value="③ GET /providers/adp-income" style="endArrow=open;endFill=0;html=1;fontSize=9;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="330" y="240" as="sourcePoint"/>
+        <mxPoint x="545" y="240" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="s3-loc" value="&lt;i&gt;Browser: reclaim-sdk.js&lt;/i&gt;" style="text;html=1;align=left;fontSize=9;strokeColor=#82b366;fillColor=#f9ffe9;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="1300" y="232" width="150" height="18" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="s4" value="④ provider template (url, extract_regex, dataType)" style="endArrow=open;endFill=0;html=1;fontSize=9;dashed=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="545" y="268" as="sourcePoint"/>
+        <mxPoint x="330" y="268" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="s4-loc" value="&lt;i&gt;Cloud: api.reclaimprotocol.org&lt;/i&gt;" style="text;html=1;align=left;fontSize=9;strokeColor=#d6b656;fillColor=#fffde7;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="1300" y="260" width="200" height="18" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="s5" value="⑤ clicks Verify Income button" style="endArrow=open;endFill=0;html=1;fontSize=9;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="120" y="320" as="sourcePoint"/>
+        <mxPoint x="330" y="320" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <mxCell id="modal" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#333333;strokeWidth=3;shadow=1;opacity=15;" vertex="1" parent="1">
+      <mxGeometry x="40" y="340" width="440" height="340" as="geometry"/>
+    </mxCell>
+    <mxCell id="modal-label" value="ADP Modal — popup rendered inside apartments.com" style="text;html=1;align=left;fontSize=11;fontStyle=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+      <mxGeometry x="52" y="346" width="400" height="20" as="geometry"/>
+    </mxCell>
+    <mxCell id="modal-sub" value="&lt;i&gt;User never leaves apartments.com — ADP loads in an iframe/popup overlay&lt;/i&gt;" style="text;html=1;align=left;fontSize=9;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+      <mxGeometry x="52" y="364" width="410" height="16" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="s6" value="⑥ opens ADP login in modal (iframe)" style="endArrow=open;endFill=0;html=1;fontSize=9;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="330" y="398" as="sourcePoint"/>
+        <mxPoint x="120" y="398" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="s6-loc" value="&lt;i&gt;Browser: reclaim-sdk.js&lt;/i&gt;" style="text;html=1;align=left;fontSize=9;strokeColor=#82b366;fillColor=#f9ffe9;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="1300" y="390" width="150" height="18" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="s7-box" value="&lt;b&gt;⑦ user enters ADP credentials in modal&lt;/b&gt;" style="text;html=1;align=center;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;rounded=1;fontStyle=2;" vertex="1" parent="1">
+      <mxGeometry x="40" y="426" width="160" height="30" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="s8" value="⑧ open proxied TLS session + enc_req (GET /pay-statements)" style="endArrow=open;endFill=0;html=1;fontSize=9;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="330" y="484" as="sourcePoint"/>
+        <mxPoint x="760" y="484" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="s8-note" value="&lt;i&gt;enc_req: TLS-encrypted bytes&lt;br/&gt;session_key stays on device&lt;/i&gt;" style="text;html=1;align=left;fontSize=9;strokeColor=#b85450;fillColor=#ffe9e9;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="340" y="466" width="185" height="30" as="geometry"/>
+    </mxCell>
+    <mxCell id="s8-loc" value="&lt;i&gt;Browser: reclaim-sdk.js&lt;/i&gt;" style="text;html=1;align=left;fontSize=9;strokeColor=#82b366;fillColor=#f9ffe9;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="1300" y="476" width="150" height="18" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="s9" value="⑨ forward enc_req to ADP (sees ciphertext only)" style="endArrow=open;endFill=0;html=1;fontSize=9;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="760" y="524" as="sourcePoint"/>
+        <mxPoint x="975" y="524" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="s9-loc" value="&lt;i&gt;Cloud: attestor node&lt;/i&gt;" style="text;html=1;align=left;fontSize=9;strokeColor=#b85450;fillColor=#ffe9e9;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="1300" y="516" width="130" height="18" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="s10" value="⑩ enc_resp (pay statement HTML, AES-encrypted)" style="endArrow=open;endFill=0;html=1;fontSize=9;dashed=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="975" y="558" as="sourcePoint"/>
+        <mxPoint x="760" y="558" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="s10-note" value="&lt;i&gt;ADP sees a normal TLS client.&lt;br/&gt;No indication of attestation.&lt;/i&gt;" style="text;html=1;align=left;fontSize=9;strokeColor=#9673a6;fillColor=#f3eef7;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="780" y="540" width="185" height="30" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="s11" value="⑪ enc_resp + signed_commitment" style="endArrow=open;endFill=0;html=1;fontSize=9;dashed=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="760" y="598" as="sourcePoint"/>
+        <mxPoint x="330" y="598" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="s11-note" value="&lt;i&gt;commitment = SHA256(resp_nonce || session_nonce)&lt;br/&gt;signed_commitment = attestor.sign(commitment)&lt;/i&gt;" style="text;html=1;align=left;fontSize=9;strokeColor=#b85450;fillColor=#ffe9e9;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="340" y="580" width="305" height="30" as="geometry"/>
+    </mxCell>
+    <mxCell id="s11-loc" value="&lt;i&gt;Cloud: attestor signs commitment&lt;/i&gt;" style="text;html=1;align=left;fontSize=9;strokeColor=#b85450;fillColor=#ffe9e9;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="1300" y="590" width="190" height="18" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="s12" value="⑫ zk_proof = prove(salary&gt;=75000, enc_resp, commitment) — WASM in browser" style="endArrow=open;endFill=0;html=1;fontSize=9;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="330" y="640" as="sourcePoint"/>
+        <mxPoint x="330" y="668" as="targetPoint"/>
+        <Array as="points">
+          <mxPoint x="440" y="640"/>
+          <mxPoint x="440" y="668"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="s12-note" value="&lt;i&gt;3–15s, CPU-intensive&lt;br/&gt;session_key used here, never sent out&lt;br/&gt;salary value never revealed&lt;/i&gt;" style="text;html=1;align=left;fontSize=9;strokeColor=#82b366;fillColor=#f9ffe9;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="452" y="630" width="210" height="46" as="geometry"/>
+    </mxCell>
+    <mxCell id="s12-loc" value="&lt;i&gt;Browser: reclaim-sdk.js (WASM prover)&lt;/i&gt;" style="text;html=1;align=left;fontSize=9;strokeColor=#82b366;fillColor=#f9ffe9;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="1300" y="648" width="210" height="18" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="s13" value="⑬ modal shows Income Verified" style="endArrow=open;endFill=0;html=1;fontSize=9;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="330" y="696" as="sourcePoint"/>
+        <mxPoint x="120" y="696" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <mxCell id="s14-box" value="&lt;b&gt;⑭ closes modal, continues application&lt;/b&gt;" style="text;html=1;align=center;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="726" width="160" height="28" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="s15" value="⑮ POST /api/verify-income  {zk_proof, attestation}" style="endArrow=open;endFill=0;html=1;fontSize=9;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="120" y="784" as="sourcePoint"/>
+        <mxPoint x="1190" y="784" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="s15-loc" value="&lt;i&gt;Browser: apply.js — fetch POST&lt;/i&gt;" style="text;html=1;align=left;fontSize=9;strokeColor=#6c8ebf;fillColor=#dae8fc;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="1300" y="776" width="200" height="18" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="s16" value="⑯ verifyProof(zk_proof, attestation, predicate)" style="endArrow=open;endFill=0;html=1;fontSize=9;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="1190" y="824" as="sourcePoint"/>
+        <mxPoint x="1190" y="852" as="targetPoint"/>
+        <Array as="points">
+          <mxPoint x="1300" y="824"/>
+          <mxPoint x="1300" y="852"/>
+        </Array>
+      </mxGeometry>
+    </mxCell>
+    <mxCell id="s16-note" value="&lt;i&gt;1. verify attestor ECDSA signature on commitment&lt;br/&gt;2. verify zk_proof soundness (Groth16/PLONK)&lt;br/&gt;3. confirm predicate: salary &gt;= 75000&lt;/i&gt;" style="text;html=1;align=left;fontSize=9;strokeColor=#BD7000;fillColor=#fef9e7;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="1310" y="814" width="290" height="46" as="geometry"/>
+    </mxCell>
+    <mxCell id="s16-loc" value="&lt;i&gt;Server: api/verify-income.js (Node/Python)&lt;/i&gt;" style="text;html=1;align=left;fontSize=9;strokeColor=#BD7000;fillColor=#fef9e7;rounded=1;" vertex="1" parent="1">
+      <mxGeometry x="1300" y="862" width="240" height="18" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="s17" value="⑰ Application Approved — income verified" style="endArrow=open;endFill=0;html=1;fontSize=9;dashed=1;" edge="1" parent="1">
+      <mxGeometry relative="1" as="geometry">
+        <mxPoint x="1190" y="906" as="sourcePoint"/>
+        <mxPoint x="120" y="906" as="targetPoint"/>
+      </mxGeometry>
+    </mxCell>
+
+    <mxCell id="legend-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fafafa;strokeColor=#555555;strokeWidth=2;" vertex="1" parent="1">
+      <mxGeometry x="40" y="1010" width="1580" height="460" as="geometry"/>
+    </mxCell>
+    <mxCell id="legend-title" value="KEY — Terms, Data Structures, and Code Locations" style="text;html=1;align=left;fontSize=15;fontStyle=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+      <mxGeometry x="56" y="1020" width="500" height="26" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="k-enc-req" value="&lt;b&gt;enc_req&lt;/b&gt; — AES-GCM encrypted TLS Application Data record (the HTTP request)&lt;br/&gt;Example: &lt;tt&gt;17 03 03 01 4a [ciphertext...]&lt;/tt&gt;&lt;br/&gt;Bytes 17 03 03 = TLS record header (type=Application Data, version=1.2). Attestor sees these bytes but cannot read the URL or headers inside." style="text;html=1;align=left;fontSize=10;strokeColor=#b85450;fillColor=#ffe9e9;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
+      <mxGeometry x="56" y="1054" width="370" height="72" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="k-enc-resp" value="&lt;b&gt;enc_resp&lt;/b&gt; — AES-GCM encrypted TLS response from ADP&lt;br/&gt;Example: &lt;tt&gt;17 03 03 04 a2 [ciphertext...]&lt;/tt&gt;&lt;br/&gt;Contains the full pay statement HTML — encrypted. Attestor passes it through without decrypting. SDK decrypts using session_key (which only the user has)." style="text;html=1;align=left;fontSize=10;strokeColor=#9673a6;fillColor=#f3eef7;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
+      <mxGeometry x="56" y="1134" width="370" height="72" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="k-session-key" value="&lt;b&gt;session_key&lt;/b&gt; — Ephemeral TLS shared secret (AES-256 key)&lt;br/&gt;Example: &lt;tt&gt;3a9f2cb1e0d47f8a...b4e1d208&lt;/tt&gt; (32 bytes)&lt;br/&gt;Derived during TLS handshake. Stays on user device only. Never sent to Attestor. Required to decrypt enc_resp and generate the ZK proof." style="text;html=1;align=left;fontSize=10;strokeColor=#6c8ebf;fillColor=#dae8fc;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
+      <mxGeometry x="56" y="1214" width="370" height="72" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="k-commitment" value="&lt;b&gt;commitment&lt;/b&gt; — Hash binding Attestor to this specific TLS session&lt;br/&gt;Formula: &lt;tt&gt;SHA256(resp_nonce || session_nonce)&lt;/tt&gt;&lt;br/&gt;Example: &lt;tt&gt;e8f3a194...c94b0271&lt;/tt&gt; (32 bytes)&lt;br/&gt;Proves the Attestor witnessed exactly this exchange, not a fabricated one." style="text;html=1;align=left;fontSize=10;strokeColor=#b85450;fillColor=#ffe9e9;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
+      <mxGeometry x="56" y="1294" width="370" height="80" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="k-signed-commit" value="&lt;b&gt;signed_commitment&lt;/b&gt; — Attestor ECDSA signature over commitment&lt;br/&gt;Formula: &lt;tt&gt;attestor_privkey.sign(commitment)&lt;/tt&gt;&lt;br/&gt;Example: &lt;tt&gt;3044 0220 [r] 0220 [s]&lt;/tt&gt; (DER-encoded, ~72 bytes)&lt;br/&gt;Apartment server verifies this against Attestor&apos;s known public key." style="text;html=1;align=left;fontSize=10;strokeColor=#b85450;fillColor=#ffe9e9;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
+      <mxGeometry x="56" y="1382" width="370" height="78" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="k-provider" value="&lt;b&gt;provider template&lt;/b&gt; — Registry record defining one data source&lt;br/&gt;Example JSON:&lt;br/&gt;&lt;tt&gt;{ id: &quot;adp-income&quot;,&lt;br/&gt;  url: &quot;adp.com/myadp/pay-statements&quot;,&lt;br/&gt;  extract: &quot;/Annual Salary.*?\\$([0-9,]+)/&quot;,&lt;br/&gt;  dataType: &quot;integer&quot; }&lt;/tt&gt;&lt;br/&gt;This is what breaks when ADP redesigns their page. *" style="text;html=1;align=left;fontSize=10;strokeColor=#d6b656;fillColor=#fffde7;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
+      <mxGeometry x="444" y="1054" width="370" height="104" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="k-predicate" value="&lt;b&gt;predicate&lt;/b&gt; — The boolean claim being proven (set by apartment site)&lt;br/&gt;Example: &lt;tt&gt;annual_salary &gt;= 75000&lt;/tt&gt;&lt;br/&gt;The ZK proof proves this holds without revealing the actual salary.&lt;br/&gt;Apartment site never learns the number — only true/false." style="text;html=1;align=left;fontSize=10;strokeColor=#82b366;fillColor=#d5e8d4;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
+      <mxGeometry x="444" y="1166" width="370" height="72" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="k-zkproof" value="&lt;b&gt;zk_proof&lt;/b&gt; — Groth16 / PLONK zero-knowledge proof bytes&lt;br/&gt;Example: &lt;tt&gt;[0xab, 0xf2, 0x3c, ...]&lt;/tt&gt; (~200–500 bytes)&lt;br/&gt;Proves: the regex matched a value &gt;= 75000 in the committed TLS response, without revealing the actual value or any other page content." style="text;html=1;align=left;fontSize=10;strokeColor=#82b366;fillColor=#d5e8d4;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
+      <mxGeometry x="444" y="1246" width="370" height="72" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="k-attestation" value="&lt;b&gt;attestation&lt;/b&gt; — Full proof bundle POSTed to apartment server:&lt;br/&gt;&lt;tt&gt;{&lt;br/&gt;  provider_id: &quot;adp-income&quot;,&lt;br/&gt;  commitment: &quot;e8f3a1...&quot;,&lt;br/&gt;  signed_commitment: &quot;304402...&quot;,&lt;br/&gt;  timestamp: 1746820342,&lt;br/&gt;  zk_proof: [0xab, 0xf2, ...]&lt;br/&gt;}&lt;/tt&gt;" style="text;html=1;align=left;fontSize=10;strokeColor=#BD7000;fillColor=#fef9e7;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
+      <mxGeometry x="444" y="1326" width="370" height="134" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="fake-page-title" value="Fake ADP Pay Statement — what the regex matches:" style="text;html=1;align=left;fontSize=11;fontStyle=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+      <mxGeometry x="832" y="1054" width="380" height="20" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="fake-page" value="adp.com/myadp/pay-statements (decrypted response excerpt)&#xa;&#xa;Employee:       Jordan Smith&#xa;Employer:       Acme Corp&#xa;Pay Period:     Jan 1 - Dec 31, 2025&#xa;Annual Salary:  $82,500      &lt;--- regex captures this&#xa;YTD Gross:      $41,250&#xa;Federal Tax:    $14,210&#xa;Net Pay YTD:    $27,040&#xa;&#xa;regex:  /Annual Salary.*?\$([0-9,]+)/&#xa;match:  &quot;Annual Salary:  $82,500&quot;&#xa;group:  &quot;82,500&quot;  -&gt;  parsed as int  82500&#xa;check:  82500 &gt;= 75000  -&gt;  TRUE  -&gt;  proof generated" style="text;html=0;align=left;fontSize=10;strokeColor=#9673a6;fillColor=#f3eef7;rounded=1;fontFamily=Courier New;whiteSpace=pre;" vertex="1" parent="1">
+      <mxGeometry x="832" y="1078" width="400" height="220" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="selective-reveal" value="&lt;b&gt;selective reveal&lt;/b&gt; — Only the matched field enters the proof.&lt;br/&gt;Jordan Smith, Acme Corp, YTD Gross, Federal Tax — all stay private.&lt;br/&gt;The apartment site learns only: salary &gt;= $75,000 is TRUE.&lt;br/&gt;It never sees $82,500, the employer name, or any other line." style="text;html=1;align=left;fontSize=10;strokeColor=#82b366;fillColor=#d5e8d4;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
+      <mxGeometry x="832" y="1308" width="400" height="72" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="code-locs" value="&lt;b&gt;Where code runs:&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;apply.js (browser) — SDK init, button handler, POST proof&lt;br/&gt;reclaim-sdk.js (browser) — provider fetch, modal, TLS routing, ZK prove&lt;br/&gt;attestor node (cloud) — TLS proxy, signs commitment&lt;br/&gt;api.reclaimprotocol.org (cloud) — serves provider templates&lt;br/&gt;adp.com (server) — serves TLS response, knows nothing&lt;br/&gt;api/verify-income.js (server) — verifies attestor sig + ZK proof" style="text;html=1;align=left;fontSize=10;strokeColor=#555555;fillColor=#f5f5f5;rounded=1;whiteSpace=wrap;" vertex="1" parent="1">
+      <mxGeometry x="1250" y="1054" width="355" height="130" as="geometry"/>
+    </mxCell>
+
+    <mxCell id="headache-note" value="* Hover over Provider Registry box (top) to see the operational headache detail." style="text;html=1;align=left;fontSize=10;fontStyle=2;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+      <mxGeometry x="56" y="1470" width="500" height="20" as="geometry"/>
+    </mxCell>
+
+  </root>
+</mxGraphModel>

@@ -5,7 +5,6 @@ date: 2026-05-09
 category: cryptography
 tags: [zktls, tls, zero-knowledge-proofs, mpc, reclaim-protocol, tlsnotary, compliance, identity, web3]
 author: Kesten Broughton
-canonical_url: https://www.pcioasis.com/blog/cryptography/zktls-proof-of-provenance
 ---
 
 # zkTLS: Cryptographic Proof That Web Data Is Real

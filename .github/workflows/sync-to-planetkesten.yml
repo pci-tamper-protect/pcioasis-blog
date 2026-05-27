@@ -1,0 +1,51 @@
+name: Sync posts to planetkesten.com
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "content/posts/**"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout pcioasis-blog
+        uses: actions/checkout@v4
+        with:
+          path: pcioasis-blog
+
+      - name: Checkout planet-kesten-site
+        uses: actions/checkout@v4
+        with:
+          repository: pci-tamper-protect/planet-kesten-site
+          token: ${{ secrets.PLANETKESTEN_PAT }}
+          path: planet-kesten-site
+
+      - name: Checkout pcioasis-ops (sync script)
+        uses: actions/checkout@v4
+        with:
+          repository: pci-tamper-protect/pcioasis-ops
+          token: ${{ secrets.PLANETKESTEN_PAT }}
+          path: pcioasis-ops
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install script dependencies
+        run: pip install pyyaml
+
+      - name: Run sync script
+        run: |
+          python3 pcioasis-ops/agents/sync_blog_posts.py \
+            --source pcioasis-blog \
+            --target planet-kesten-site \
+            --create-pr
+        env:
+          GH_TOKEN: ${{ secrets.PLANETKESTEN_PAT }}

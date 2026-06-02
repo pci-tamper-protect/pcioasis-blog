@@ -5,3 +5,7 @@ resources/_gen/
 
 # Generated content variants (committed only on content/*-variants PR branches)
 content/posts/**/_variants/
+
+# uv / Python (content-pipeline venv)
+.venv/
+agents/content-pipeline/.venv/

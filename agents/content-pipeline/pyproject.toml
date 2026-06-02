@@ -1,0 +1,19 @@
+[project]
+name = "pcioasis-content-pipeline"
+version = "0.1.0"
+description = "Multi-platform content variant generator for pcioasis-blog"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "anthropic>=0.40.0",
+    "markdown>=3.5",
+    "openai>=1.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

@@ -25,13 +25,14 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.PLANETKESTEN_PAT }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install -r agents/content-pipeline/requirements.txt
+        working-directory: agents/content-pipeline
+        run: uv sync --frozen
 
       - name: Detect changed post directories
         id: posts
@@ -53,7 +54,8 @@ jobs:
         run: |
           for post_dir in ${{ steps.posts.outputs.dirs }}; do
             echo "Processing $post_dir"
-            python agents/content-pipeline/generate_variants.py "$post_dir"
+            uv run --project agents/content-pipeline \
+              python agents/content-pipeline/generate_variants.py "$post_dir"
           done
 
       - name: Open review PR for each post
@@ -61,7 +63,8 @@ jobs:
           GH_TOKEN: ${{ secrets.PLANETKESTEN_PAT }}
         run: |
           for post_dir in ${{ steps.posts.outputs.dirs }}; do
-            python agents/content-pipeline/assemble_pr.py \
+            uv run --project agents/content-pipeline \
+              python agents/content-pipeline/assemble_pr.py \
               "$post_dir" \
               --repo pci-tamper-protect/pcioasis-blog
           done

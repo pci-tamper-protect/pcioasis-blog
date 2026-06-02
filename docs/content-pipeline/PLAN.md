@@ -78,7 +78,7 @@ pcioasis-blog/
 │   ├── generate_variants.py      ← Phase 1: Claude API → all text variants
 │   ├── preview_server.py         ← Phase 1: mobile-friendly local preview
 │   ├── assemble_pr.py            ← Phase 1: commit variants + open review PR
-│   ├── requirements.txt
+│   ├── pyproject.toml / uv.lock
 │   └── tests/
 │       └── test_generate_variants.py
 │
@@ -107,7 +107,7 @@ General-purpose infra agents (SDLC indexer, MCP server) remain in `pcioasis-ops`
 **Run locally:**
 ```bash
 cd ~/projectos/pcioasis-blog
-pip install -r agents/content-pipeline/requirements.txt
+cd agents/content-pipeline && uv sync
 python agents/content-pipeline/generate_variants.py content/posts/zkTLS/zktls-proof-of-provenance
 python agents/content-pipeline/preview_server.py content/posts/zkTLS/zktls-proof-of-provenance
 # open http://<your-IP>:5050/ on Android

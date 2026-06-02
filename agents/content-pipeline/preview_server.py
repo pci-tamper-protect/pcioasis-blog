@@ -346,9 +346,9 @@ def main() -> None:
 
     variants_dir = args.post_dir.resolve() / "_variants"
     if not variants_dir.exists():
-        sys.exit(
-            f"No _variants/ directory found at {variants_dir}. Run generate_variants.py first."
-        )
+        from env_help import print_missing_variants_help
+
+        print_missing_variants_help(variants_dir, args.post_dir.resolve())
 
     import socket
 

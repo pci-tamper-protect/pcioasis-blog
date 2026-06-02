@@ -24,6 +24,8 @@ from typing import Any
 
 import yaml
 
+from env_help import check_gh_available, print_gh_setup_commands, print_missing_variants_help
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -139,9 +141,7 @@ def assemble_pr(post_dir: Path, repo: str, base_branch: str, dry_run: bool) -> N
 
     variants_dir = post_dir / "_variants"
     if not variants_dir.exists():
-        sys.exit(
-            f"No _variants/ directory at {variants_dir}. Run generate_variants.py first."
-        )
+        print_missing_variants_help(variants_dir, post_dir)
 
     manifest = read_manifest(variants_dir)
     section = post_dir.parent.name.lower()
@@ -163,6 +163,15 @@ def assemble_pr(post_dir: Path, repo: str, base_branch: str, dry_run: bool) -> N
         print("\n[dry-run] Would create branch, commit _variants/, and open PR.")
         return
 
+    check_gh_available()
+    if subprocess.run(
+        ["gh", "auth", "status"],
+        cwd=repo_root,
+        capture_output=True,
+    ).returncode != 0:
+        print_gh_setup_commands(reason="GitHub CLI not authenticated.")
+        sys.exit(1)
+
     # Create branch from base
     git(["checkout", "-B", branch_name, f"origin/{base_branch}"], cwd=repo_root)
 
@@ -172,7 +181,10 @@ def assemble_pr(post_dir: Path, repo: str, base_branch: str, dry_run: bool) -> N
 
     status = git(["status", "--short"], cwd=repo_root)
     if not status.stdout.strip():
-        print("Nothing to commit — variants already up to date on this branch.")
+        print(
+            "Nothing to commit — variants already up to date on this branch, "
+            f"or no files under {rel_variants}."
+        )
     else:
         git(
             [

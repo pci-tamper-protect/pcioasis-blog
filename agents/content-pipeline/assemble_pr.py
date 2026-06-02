@@ -166,9 +166,9 @@ def assemble_pr(post_dir: Path, repo: str, base_branch: str, dry_run: bool) -> N
     # Create branch from base
     git(["checkout", "-B", branch_name, f"origin/{base_branch}"], cwd=repo_root)
 
-    # Stage all _variants/ files
+    # _variants/ is gitignored on main; force-add so review branches can commit them.
     rel_variants = variants_dir.relative_to(repo_root)
-    git(["add", str(rel_variants)], cwd=repo_root)
+    git(["add", "-f", str(rel_variants)], cwd=repo_root)
 
     status = git(["status", "--short"], cwd=repo_root)
     if not status.stdout.strip():

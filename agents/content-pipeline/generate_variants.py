@@ -103,8 +103,16 @@ PLATFORM_SPECS = {
     "planetkesten": dedent(
         """\
         Write a blog-length article (600–900 words) adapted for a GENERAL audience at planetkesten.com.
+        planetkesten.com is a personal general-interest blog — NOT a PCI or compliance publication.
+        IMPORTANT: Only write this variant if the topic has clear, direct relevance to a general reader
+        (e.g. a real-world hack, a consumer privacy issue, an AI story with broad impact). If the post
+        is primarily about PCI DSS compliance requirements, payment brand rules, or narrow infosec
+        standards with no strong general-interest hook, output exactly:
+          SKIP: topic is too PCI/compliance-specific for planetkesten.com
+        and nothing else.
+        If the topic IS appropriate, write:
         - Assume zero background in PCI, payments, or infosec
-        - Lead with a relatable real-world hook (e.g. "ever wondered how your credit card is protected?")
+        - Lead with a relatable real-world hook (e.g. "your Instagram account was just stolen by a chatbot")
         - Avoid jargon; when technical terms are unavoidable, define them inline
         - Friendly, curious tone — like explaining to a smart friend, not a colleague
         - Mobile-friendly: keep paragraphs to 2–3 sentences max; use subheadings every 150–200 words
@@ -118,6 +126,15 @@ PLATFORM_SPECS = {
     "kbroughton": dedent(
         """\
         Write a technical deep-dive (800–1200 words) for kbroughton.github.io targeting senior engineers.
+        kbroughton.github.io is a personal technical blog covering security, crypto, and engineering —
+        NOT a PCI compliance publication. Only write this variant if the post has a strong, non-obvious
+        technical angle that stands on its own merits for an engineer audience (e.g. a novel protocol
+        weakness, an interesting implementation finding, a surprising threat-model result).
+        If the post is primarily about PCI DSS process requirements, audit checklists, or compliance
+        procedures with no independent technical depth, output exactly:
+          SKIP: topic is too compliance-procedural for kbroughton.github.io
+        and nothing else.
+        If the topic IS appropriate, write:
         - Audience has deep infosec/crypto background; skip basics entirely
         - Lead with the hardest technical insight or most surprising finding
         - Include implementation details, threat-model edge cases, or protocol specifics
@@ -344,8 +361,19 @@ def generate_variants(post_dir: Path, dry_run: bool = False) -> None:
 
     source_md = f"# {meta.get('title', '')}\n\n{body}"
 
+    # Optional frontmatter field: platforms: [bluesky, mastodon, ...]
+    # If present, only the listed variant keys are generated.
+    allowed_platforms: set[str] | None = None
+    if "platforms" in meta and isinstance(meta["platforms"], list):
+        allowed_platforms = set(meta["platforms"])
+
+    active_tasks = [
+        (k, p) for k, p in tasks
+        if allowed_platforms is None or k in allowed_platforms
+    ]
+
     if dry_run:
-        for variant_key, out_path in tasks:
+        for variant_key, out_path in active_tasks:
             print(f"  [dry-run] would generate {variant_key} -> {out_path.relative_to(post_dir)}")
         return
 
@@ -356,10 +384,15 @@ def generate_variants(post_dir: Path, dry_run: bool = False) -> None:
     youtube_dir.mkdir(exist_ok=True)
 
     results: dict[str, str] = {}
-    for variant_key, out_path in tasks:
+    skipped: list[str] = []
+    for variant_key, out_path in active_tasks:
         print(f"  Generating {variant_key}...", flush=True)
         spec = PLATFORM_SPECS[variant_key]
         text = complete(source_md, spec, canonical_url, backend=backend)
+        if text.strip().startswith("SKIP:"):
+            print(f"    -> skipped ({text.strip()})")
+            skipped.append(variant_key)
+            continue
         results[variant_key] = text
         out_path.write_text(text + "\n", encoding="utf-8")
         print(f"    -> {out_path.relative_to(post_dir)}")
@@ -371,7 +404,8 @@ def generate_variants(post_dir: Path, dry_run: bool = False) -> None:
         "date": str(meta.get("date", "")),
         "llm_backend": backend.name,
         "llm_model": backend.model,
-        "variants": {k: str(p.relative_to(post_dir)) for k, p in tasks},
+        "variants": {k: str(p.relative_to(post_dir)) for k, p in active_tasks if k not in skipped},
+        "skipped": skipped,
     }
     (variants_dir / "manifest.json").write_text(
         json.dumps(manifest, indent=2) + "\n", encoding="utf-8"

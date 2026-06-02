@@ -95,7 +95,13 @@ content/posts/<section>/<slug>/_variants/video-arena/
      content/posts/zkTLS/zktls-proof-of-provenance
    ```
 
-2. Open `review.html` in a browser (or `preview_server.py --arena` when wired).
+2. Open `review.html` in a browser **or** use the preview server arena tab:
+
+   ```bash
+   uv run --project agents/content-pipeline \
+     python agents/content-pipeline/preview_server.py POST_DIR
+   # http://<LAN-IP>:5050/arena  — same page, streams MP4s for phone review
+   ```
 
 3. Score each candidate (1–5): **motion quality**, **prompt adherence**, **artifacts**, **usable for Clapper without re-edit**.
 
@@ -131,9 +137,9 @@ Run arena **once per post** at review-PR time, not on every `index.md` typo.
 | Piece | Status |
 |-------|--------|
 | `VIDEO_ARENA.md` | This doc |
-| `generate_video_arena.py` + `video_arena/` package | Scaffold — providers call APIs when creds present |
-| `review.html` generator | Included |
-| `preview_server` arena tab | TODO |
+| `generate_video_arena.py` + `video_arena/` package | Built — providers call APIs when creds present |
+| `review.html` generator | Built |
+| `preview_server` `/arena` tab | Built — serves MP4s for mobile review |
 | ffmpeg assembly (narration + slides) | Phase 3b — separate from T2V arena |
 
 ---

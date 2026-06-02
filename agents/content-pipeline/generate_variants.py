@@ -132,17 +132,23 @@ PLATFORM_SPECS = {
     ),
     "linkedin": dedent(
         """\
-        Write a LinkedIn article post (400–600 words) for a professional/B2B audience.
-        - Readers are security managers, CTOs, compliance officers, fintech founders
-        - Lead with a business risk or regulatory angle, not a technical one
-        - One concrete takeaway actionable for someone running a PCI-compliant product
-        - Professional but not stiff; first-person voice is fine
-        - Mobile-friendly: single-sentence paragraphs separated by blank lines; no walls of text
-        - End with 3–5 relevant hashtags on a separate line
+        Write a SHORT LinkedIn post in the style of Brian Krebs on krebsonsecurity.com.
+        Model: 2-3 sentence hook describing what happened and why it matters, then a
+        "From the post:" pull quote (the single most striking sentence from the source),
+        then the canonical URL on its own line (LinkedIn auto-generates the card).
+        Total length: 100-180 words MAX — the link card carries the rest.
+        Rules:
+        - Open with the most alarming or surprising fact, not background
+        - Readers are security professionals and executives — no hand-holding
+        - First-person or third-person, not promotional
+        - "From the post:" label is literal — use those exact words before the quote
+        - Canonical URL goes last, alone on its own line — NO other URLs in the body
+        - 2-3 hashtags ONLY, inline in the hook paragraph (not a wall at the end)
+        - Do NOT write a long essay; brevity is the entire point of this format
         REQUIRED output format (agents parse this):
           Line 1: META_DESCRIPTION: <one sentence, ≤155 chars, suitable for og:description>
           Line 2: blank
-          Lines 3+: plain text body (LinkedIn ignores Markdown headings); blank lines between paragraphs
+          Lines 3+: the short post body ending with the canonical URL on its own line
         """
     ),
     "bluesky": dedent(

@@ -55,6 +55,26 @@ uv run --project agents/content-pipeline \
   content/posts/zkTLS/zktls-proof-of-provenance --dry-run
 ```
 
+## Video arena (Phase 3a)
+
+After text variants exist, compare four text-to-video APIs and pick a winner in the browser.
+
+```bash
+uv sync --project agents/content-pipeline --extra dev --extra video-arena
+eval "$(./deploy/secrets/export-macos-keychain.sh)"   # Azure
+export GOOGLE_CLOUD_PROJECT=your-project              # Vertex (GCP credits)
+export VIDEO_ARENA_S3_OUTPUT_URI=s3://bucket/arena/   # Bedrock Luma
+export REPLICATE_API_TOKEN=r8_...                     # comparison lane
+
+uv run --project agents/content-pipeline \
+  python agents/content-pipeline/generate_video_arena.py \
+  content/posts/zkTLS/zktls-proof-of-provenance
+
+open content/posts/zkTLS/zktls-proof-of-provenance/_variants/video-arena/review.html
+```
+
+See `docs/content-pipeline/VIDEO_ARENA.md`.
+
 ## Tests
 
 ```bash

@@ -142,16 +142,32 @@ Generate platform-sized image crops from diagrams in the post.
 
 ---
 
-### Phase 3 — Video pipeline 🔲 TODO
+### Phase 3a — Short video arena (text-to-video shootout) 🔲 IN PROGRESS
 
-Narrated YouTube video from HTML slides.
+Compare **four** cloud APIs; human picks the best clip for Clapper / Shorts.
+
+| Slot | Provider | Model |
+|------|----------|-------|
+| 1 | Azure AI Foundry | Sora 2 |
+| 2 | Google Vertex AI | Veo 3.1 Fast |
+| 3 | AWS Bedrock | Luma Ray 2 |
+| 4 | Replicate | MiniMax Hailuo 2.3 |
+
+- Input: `_variants/clapper.txt` + optional diagram PNG in post folder
+- Tool: `generate_video_arena.py` → `_variants/video-arena/{provider}/video.mp4` + `review.html`
+- Human: score in browser, write `WINNER.txt`, copy to `_variants/clapper/clip.mp4`
+- Docs: `docs/content-pipeline/VIDEO_ARENA.md`
+
+### Phase 3b — Long-form video (slides + narration) 🔲 TODO
+
+Narrated YouTube video from HTML slides (separate from T2V arena).
 
 - Input: `_variants/youtube/script.md`, `_variants/youtube/chapters.txt`, HTML animation frames
 - Steps:
   1. ElevenLabs (or local Coqui/Kokoro) generates narration MP3 from script
   2. Playwright records HTML animation slides as MP4 segments
   3. ffmpeg assembles: slides + narration + text overlays → final MP4
-- Output: `_variants/youtube/video.mp4`, `_variants/clapper/clip.mp4` (60s cut)
+- Output: `_variants/youtube/video.mp4`
 
 ---
 

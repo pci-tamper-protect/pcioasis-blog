@@ -15,7 +15,7 @@ Outputs:
     bluesky.txt         # short AT-Protocol post (300 chars)
     mastodon.txt        # Mastodon post with CW header for infosec.exchange
     pixelfed.txt        # image-centric caption for Pixelfed
-    clapper.txt         # short-form script for Clapper (TikTok alt, TX-first)
+    clapper.txt         # short-form script for Clapper (primary short-video, US-first)
     twitter-xref.txt    # manual helper: tweet referencing Bluesky post
     tiktok-xref.txt     # manual helper: TikTok referencing Clapper post
     youtube/

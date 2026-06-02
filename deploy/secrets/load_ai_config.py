@@ -169,6 +169,15 @@ def load_ai_config(
     )
 
 
+def _mask_api_key(key: str) -> str:
+    """Return a non-reversible preview safe for logs and JSON stdout."""
+    if not key:
+        return ""
+    if len(key) <= 8:
+        return "(set)"
+    return f"{key[:4]}…{key[-4:]}"
+
+
 def apply_to_environ(cfg: AIConfig) -> None:
     """Export standard env vars for shell scripts and third-party CLIs."""
     os.environ["AI_API_KEY"] = cfg.api_key
@@ -218,8 +227,16 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description="Load and print AI config (no secrets on stdout by default)")
     parser.add_argument("--file", type=Path, help="Secret JSON file (default: AI_SECRET_FILE or /tmp/ai)")
-    parser.add_argument("--show-key", action="store_true", help="Print api_key (careful)")
-    parser.add_argument("--export-shell", action="store_true", help="Print export statements for bash")
+    parser.add_argument(
+        "--show-key-mask",
+        action="store_true",
+        help="Include masked api_key preview in JSON (never prints the full key)",
+    )
+    parser.add_argument(
+        "--export-shell",
+        action="store_true",
+        help="Print export statements for bash (writes secrets to stdout; pipe to eval only)",
+    )
     parser.add_argument("--prefer-keychain", action="store_true")
     args = parser.parse_args()
 
@@ -248,8 +265,8 @@ def main() -> None:
         "azure_openai_endpoint": cfg.azure_openai_endpoint,
         "api_key_set": bool(cfg.api_key),
     }
-    if args.show_key:
-        info["api_key"] = cfg.api_key
+    if args.show_key_mask:
+        info["api_key_mask"] = _mask_api_key(cfg.api_key)
     print(json.dumps(info, indent=2))
 
 

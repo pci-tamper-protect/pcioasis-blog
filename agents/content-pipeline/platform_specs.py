@@ -68,6 +68,7 @@ PLATFORM_SPECS: dict[str, str] = {
         - Lead with the sharpest technical insight or surprising finding
         - RFC/CVE/spec references by number; implementation and threat-model detail
         - Dry precise tone; short paragraphs; code blocks where relevant
+        - Mobile-friendly: short paragraphs (2–3 sentences), code blocks for anything executable
 
         Length: 800–1200 words.
 
@@ -162,6 +163,7 @@ PLATFORM_SPECS: dict[str, str] = {
         Performance patterns:
         - Line 1: visual alt-text style description of the hero diagram/image (what viewers see)
         - 2–3 short paragraphs (≤2 sentences each); emoji at paragraph start for scanability
+        - Mobile-friendly: thumb-scroll scannability with short paragraphs and line breaks
         - Canonical URL before the hashtag block
         - 5–8 focused hashtags on final line (#CamelCase mix of broad + niche)
         - Do not write a blog excerpt; caption complements the image
@@ -282,6 +284,7 @@ PLATFORM_SPECS: dict[str, str] = {
         Performance patterns:
         - Bold visual hook line 1 (scroll-stopper)
         - 1–2 sentences per paragraph; emoji paragraph leaders
+        - Mobile-first: short paragraphs for fast Reels scroll feeds
         - [CLAPPER_URL] placeholder; 8–12 hashtags (broad #cybersecurity + niche)
 
         Output: ONLY the caption text.

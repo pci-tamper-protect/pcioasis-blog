@@ -2,6 +2,8 @@
 
 Generate and review platform-specific variants from Hugo `index.md` posts.
 
+Per-platform format rules: `platform_specs.py` (agent prompts) and `docs/content-pipeline/PLATFORM_PLAYBOOK.md` (research summary).
+
 ## Setup (`uv`)
 
 ```bash

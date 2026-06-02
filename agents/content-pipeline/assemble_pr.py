@@ -65,7 +65,7 @@ def variant_summary(variants_dir: Path) -> str:
     PLATFORM_LABELS = {
         "planetkesten.md": ("🌍 planetkesten.com", "Blog — broad audience"),
         "kbroughton.md": ("👨‍💻 kbroughton.github.io", "Blog — technical audience"),
-        "linkedin.md": ("💼 LinkedIn", "Professional article"),
+        "linkedin.md": ("💼 LinkedIn", "Short link post + OG card"),
         "bluesky.txt": ("🦋 Bluesky", "Micro-post (≤300 chars)"),
         "mastodon.txt": ("🐘 Mastodon", "Micro-post w/ CW (≤500 chars)"),
         "pixelfed.txt": ("📷 Pixelfed", "Image caption"),

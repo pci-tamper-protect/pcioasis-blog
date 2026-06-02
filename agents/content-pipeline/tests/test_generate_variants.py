@@ -326,3 +326,62 @@ class TestGenerateVariants:
             generate_variants(post_dir)
         bluesky = (post_dir / "_variants" / "bluesky.txt").read_text()
         assert "EXACT OUTPUT TEXT" in bluesky
+
+
+# ---------------------------------------------------------------------------
+# Structured output format contract (mobile / SEO / agentic)
+# ---------------------------------------------------------------------------
+
+
+class TestOutputFormatContract:
+    """Verify the specs require machine-parseable markers for downstream agents."""
+
+    def test_blog_specs_require_meta_description(self):
+        for key in ("planetkesten", "kbroughton", "linkedin"):
+            assert "META_DESCRIPTION:" in PLATFORM_SPECS[key], (
+                f"{key} spec missing META_DESCRIPTION: marker"
+            )
+
+    def test_clapper_requires_hook_and_talk_markers(self):
+        spec = PLATFORM_SPECS["clapper"]
+        assert "HOOK:" in spec
+        assert "TALK:" in spec
+        assert "CAPTION:" in spec
+
+    def test_youtube_shorts_requires_caption_and_overlay_markers(self):
+        spec = PLATFORM_SPECS["youtube_shorts"]
+        assert "CAPTION:" in spec
+        assert "OVERLAY:" in spec
+
+    def test_mastodon_cw_marker_documented(self):
+        assert "CW:" in PLATFORM_SPECS["mastodon"]
+
+    def test_blog_specs_require_mobile_guidance(self):
+        for key in ("planetkesten", "kbroughton", "linkedin"):
+            spec = PLATFORM_SPECS[key].lower()
+            assert "mobile" in spec, f"{key} spec missing mobile guidance"
+
+    def test_social_specs_require_mobile_guidance(self):
+        for key in ("pixelfed", "reels_xref", "rednote_xref"):
+            spec = PLATFORM_SPECS[key].lower()
+            assert "mobile" in spec, f"{key} spec missing mobile guidance"
+
+    def test_youtube_description_mentions_125_chars_mobile_preview(self):
+        assert "125" in PLATFORM_SPECS["youtube_description"]
+
+    def test_youtube_script_sentence_length_guidance(self):
+        assert "15 words" in PLATFORM_SPECS["youtube_script"]
+
+    def test_all_xref_specs_have_placeholder(self):
+        xref_placeholder = {
+            "twitter_xref": "[BLUESKY_URL]",
+            "tiktok_xref": "[CLAPPER_URL]",
+            "douyin_xref": "[CLAPPER_URL]",
+            "rednote_xref": "[CLAPPER_URL]",
+            "youtube_shorts": "[CLAPPER_URL]",
+            "reels_xref": "[CLAPPER_URL]",
+        }
+        for key, placeholder in xref_placeholder.items():
+            assert placeholder in PLATFORM_SPECS[key], (
+                f"{key} missing {placeholder} placeholder"
+            )

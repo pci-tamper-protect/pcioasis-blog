@@ -47,9 +47,12 @@ raw = path.read_text(encoding="utf-8").strip()
 if not raw:
     raise SystemExit("secret file is empty")
 
-data = json.loads(raw)
-if isinstance(data, str):
-    # Bare API key string only.
+try:
+    data = json.loads(raw)
+except json.JSONDecodeError:
+    # Bare API key (single line, not JSON).
+    data = {"api_key": raw, "api_key_name": "default"}
+elif isinstance(data, str):
     data = {"api_key": data, "api_key_name": "default"}
 
 if not isinstance(data, dict):

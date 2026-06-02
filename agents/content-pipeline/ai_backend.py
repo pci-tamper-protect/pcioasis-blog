@@ -196,9 +196,19 @@ def _openai_config(source: str) -> BackendConfig | None:
     )
 
 
+_VALID_FORCED_BACKENDS = frozenset({"anthropic", "azure_openai", "openai"})
+
+
 def resolve_backend() -> BackendConfig:
     """Pick LLM backend from env (and optional secret file). Exits if none found."""
     forced = os.environ.get("CONTENT_PIPELINE_LLM_BACKEND", "").strip().lower()
+    if forced and forced not in _VALID_FORCED_BACKENDS:
+        print(
+            f"error: invalid CONTENT_PIPELINE_LLM_BACKEND={forced!r}; "
+            f"use one of: {', '.join(sorted(_VALID_FORCED_BACKENDS))}",
+            file=sys.stderr,
+        )
+        raise SystemExit(1)
     secret_path: str | None = None
 
     def try_resolve() -> BackendConfig | None:

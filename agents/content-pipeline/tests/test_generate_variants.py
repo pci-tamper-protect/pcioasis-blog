@@ -189,9 +189,22 @@ zkTLS lets you prove a TLS session happened without revealing credentials.
 """
 
 
+FAKE_ANTHROPIC_KEY = "sk-ant-api03-test-key"
+
+
 def patch_complete(response_text: str = "Generated content"):
     """Patch ai_backend.complete to avoid real API calls."""
     return patch("generate_variants.complete", return_value=response_text)
+
+
+def anthropic_env(**overrides: str):
+    """Hermetic env: valid Anthropic key shape, no secret file, no ambient LLM vars."""
+    env = {
+        "ANTHROPIC_API_KEY": FAKE_ANTHROPIC_KEY,
+        "CONTENT_PIPELINE_SKIP_SECRET_FILE": "1",
+        **overrides,
+    }
+    return patch.dict("os.environ", env, clear=True)
 
 
 class TestGenerateVariants:
@@ -205,25 +218,19 @@ class TestGenerateVariants:
 
     def test_creates_variants_dir(self, tmp_path):
         post_dir = self._write_post(tmp_path)
-        with patch_complete("Hello world"), patch.dict(
-            "os.environ", {"ANTHROPIC_API_KEY": "fake-key"}
-        ):
+        with patch_complete("Hello world"), anthropic_env():
             generate_variants(post_dir)
         assert (post_dir / "_variants").is_dir()
 
     def test_creates_youtube_subdir(self, tmp_path):
         post_dir = self._write_post(tmp_path)
-        with patch_complete("content"), patch.dict(
-            "os.environ", {"ANTHROPIC_API_KEY": "fake-key"}
-        ):
+        with patch_complete("content"), anthropic_env():
             generate_variants(post_dir)
         assert (post_dir / "_variants" / "youtube").is_dir()
 
     def test_all_variant_files_created(self, tmp_path):
         post_dir = self._write_post(tmp_path)
-        with patch_complete("Generated text"), patch.dict(
-            "os.environ", {"ANTHROPIC_API_KEY": "fake-key"}
-        ):
+        with patch_complete("Generated text"), anthropic_env():
             generate_variants(post_dir)
 
         variants_dir = post_dir / "_variants"
@@ -250,9 +257,7 @@ class TestGenerateVariants:
 
     def test_manifest_written(self, tmp_path):
         post_dir = self._write_post(tmp_path)
-        with patch_complete("content"), patch.dict(
-            "os.environ", {"ANTHROPIC_API_KEY": "fake-key"}
-        ):
+        with patch_complete("content"), anthropic_env():
             generate_variants(post_dir)
         manifest_path = post_dir / "_variants" / "manifest.json"
         assert manifest_path.exists()
@@ -262,9 +267,7 @@ class TestGenerateVariants:
 
     def test_canonical_url_derived_from_section(self, tmp_path):
         post_dir = self._write_post(tmp_path)
-        with patch_complete("content"), patch.dict(
-            "os.environ", {"ANTHROPIC_API_KEY": "fake-key"}
-        ):
+        with patch_complete("content"), anthropic_env():
             generate_variants(post_dir)
         manifest = json.loads((post_dir / "_variants" / "manifest.json").read_text())
         # section = parent dir name = "zkTLS" -> lowercased in URL
@@ -284,9 +287,7 @@ class TestGenerateVariants:
 
     def test_api_called_for_each_variant(self, tmp_path):
         post_dir = self._write_post(tmp_path)
-        with patch_complete("content") as mock_complete, patch.dict(
-            "os.environ", {"ANTHROPIC_API_KEY": "fake-key"}
-        ):
+        with patch_complete("content") as mock_complete, anthropic_env():
             generate_variants(post_dir)
         assert mock_complete.call_count == 16
 
@@ -315,15 +316,13 @@ class TestGenerateVariants:
     def test_missing_index_md_exits(self, tmp_path):
         post_dir = tmp_path / "empty-post"
         post_dir.mkdir()
-        with patch.dict("os.environ", {"ANTHROPIC_API_KEY": "fake-key"}):
+        with anthropic_env():
             with pytest.raises(SystemExit):
                 generate_variants(post_dir)
 
     def test_variant_content_written_verbatim(self, tmp_path):
         post_dir = self._write_post(tmp_path)
-        with patch_complete("EXACT OUTPUT TEXT"), patch.dict(
-            "os.environ", {"ANTHROPIC_API_KEY": "fake-key"}
-        ):
+        with patch_complete("EXACT OUTPUT TEXT"), anthropic_env():
             generate_variants(post_dir)
         bluesky = (post_dir / "_variants" / "bluesky.txt").read_text()
         assert "EXACT OUTPUT TEXT" in bluesky

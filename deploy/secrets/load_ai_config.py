@@ -178,6 +178,17 @@ def _mask_api_key(key: str) -> str:
     return f"{key[:4]}…{key[-4:]}"
 
 
+def normalize_azure_endpoint(endpoint: str) -> tuple[str, bool]:
+    """Return (endpoint_for_client, use_openai_v1_client). Matches ai_backend.py."""
+    ep = endpoint.strip().rstrip("/")
+    if ep.endswith("/openai/v1"):
+        return f"{ep}/", True
+    for suffix in ("/openai/v1", "/openai"):
+        if ep.endswith(suffix):
+            ep = ep[: -len(suffix)]
+    return ep.rstrip("/") + "/", False
+
+
 def apply_to_environ(cfg: AIConfig) -> None:
     """Export standard env vars for shell scripts and third-party CLIs."""
     os.environ["AI_API_KEY"] = cfg.api_key
@@ -198,13 +209,21 @@ def create_openai_client(cfg: AIConfig | None = None, **kwargs: Any) -> Any:
     try:
         from openai import AzureOpenAI, OpenAI
     except ImportError as exc:
-        raise ImportError("uv sync --extra secrets (openai>=1.0)") from exc
+        raise ImportError(
+            "openai package required; run: uv sync --project agents/content-pipeline"
+        ) from exc
 
     if cfg.azure_openai_endpoint:
+        client_endpoint, use_v1 = normalize_azure_endpoint(cfg.azure_openai_endpoint)
+        if use_v1:
+            return OpenAI(base_url=client_endpoint, api_key=cfg.api_key, **kwargs)
         return AzureOpenAI(
-            azure_endpoint=cfg.azure_openai_endpoint.rstrip("/"),
+            azure_endpoint=client_endpoint,
             api_key=cfg.api_key,
-            api_version=kwargs.pop("api_version", os.environ.get("AZURE_OPENAI_API_VERSION", DEFAULT_API_VERSION)),
+            api_version=kwargs.pop(
+                "api_version",
+                os.environ.get("AZURE_OPENAI_API_VERSION", DEFAULT_API_VERSION),
+            ),
             **kwargs,
         )
     return OpenAI(api_key=cfg.api_key, **kwargs)
@@ -254,6 +273,7 @@ def main() -> None:
         ):
             val = os.environ.get(key)
             if val:
+                # codeql[py/clear-text-logging-sensitive-data]: intentional for local eval "$(...)"
                 print(f'export {key}={json.dumps(val)}')
         return
 

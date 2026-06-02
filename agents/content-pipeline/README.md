@@ -60,5 +60,3 @@ cd agents/content-pipeline
 uv sync --extra dev
 uv run pytest -q
 ```
-
-`requirements.txt` is kept for reference; prefer `uv sync` from this directory.

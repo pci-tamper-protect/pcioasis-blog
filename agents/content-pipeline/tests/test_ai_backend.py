@@ -49,6 +49,11 @@ class TestBackendResolution:
         cfg = resolve_backend()
         assert cfg.name == "openai"
 
+    def test_invalid_forced_backend_exits(self, monkeypatch):
+        monkeypatch.setenv("CONTENT_PIPELINE_LLM_BACKEND", "typo")
+        with pytest.raises(SystemExit):
+            resolve_backend()
+
     def test_forced_backend(self, monkeypatch):
         monkeypatch.setenv("CONTENT_PIPELINE_LLM_BACKEND", "azure_openai")
         monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)

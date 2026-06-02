@@ -144,17 +144,19 @@ Generate platform-sized image crops from diagrams in the post.
 
 ### Phase 3a — Short video arena (text-to-video shootout) 🔲 IN PROGRESS
 
-Compare **four** cloud APIs; human picks the best clip for Clapper / Shorts.
+Compare **five** cloud APIs (two on Azure Foundry); human picks the best clip for Clapper / Shorts.
 
 | Slot | Provider | Model |
 |------|----------|-------|
-| 1 | Azure AI Foundry | Sora 2 |
+| 1a | Azure AI Foundry | Sora 2 |
+| 1b | Azure AI Foundry | Sora (v1) |
 | 2 | Google Vertex AI | Veo 3.1 Fast |
 | 3 | AWS Bedrock | Luma Ray 2 |
 | 4 | Replicate | MiniMax Hailuo 2.3 |
 
 - Input: `_variants/clapper.txt` + optional diagram PNG in post folder
 - Tool: `generate_video_arena.py` → `_variants/video-arena/{provider}/video.mp4` + `review.html`
+- Preview: `preview_server.py` → `http://<LAN-IP>:5050/arena` (mobile review alongside text variants)
 - Human: score in browser, write `WINNER.txt`, copy to `_variants/clapper/clip.mp4`
 - Docs: `docs/content-pipeline/VIDEO_ARENA.md`
 

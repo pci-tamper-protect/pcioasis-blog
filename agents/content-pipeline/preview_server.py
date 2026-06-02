@@ -245,8 +245,11 @@ def platform_card(key: str, text: str) -> str:
 """
 
 
-def render_page(title: str, body: str, active: str = "") -> str:
+def render_page(title: str, body: str, active: str = "", *, arena_link: bool = False) -> str:
     nav_links = []
+    if arena_link:
+        cls = ' class="active"' if active == "arena" else ""
+        nav_links.append(f'<a href="/arena"{cls} style="background:#ff4500;color:#fff">🎥 Video arena</a>')
     for k, m in PLATFORM_META.items():
         cls = ' class="active"' if k == active else ""
         style = f' style="background:{m["color"]}"' if k == active else ""
@@ -275,10 +278,19 @@ def render_page(title: str, body: str, active: str = "") -> str:
 </html>"""
 
 
-def render_index(manifest: dict, variants: dict[str, str]) -> str:
+def render_index(manifest: dict, variants: dict[str, str], *, has_arena: bool = False) -> str:
     post_title = manifest.get("title", "Unknown post")
     canonical = manifest.get("canonical", "")
     tiles = []
+    if has_arena:
+        tiles.append(
+            '<a class="index-tile" href="/arena" '
+            'style="border-top: 3px solid #ff4500">'
+            '<span class="icon">🎥</span>'
+            '<span class="name">Video arena</span>'
+            '<span class="type">T2V shootout ✓</span>'
+            "</a>"
+        )
     for key, meta in PLATFORM_META.items():
         has = "✓" if key in variants else "✗"
         anchor = key.replace("/", "-")
@@ -295,17 +307,84 @@ def render_index(manifest: dict, variants: dict[str, str]) -> str:
     return render_page(post_title, info + grid, active="")
 
 
-def wsgi_app(variants_dir: Path):
+def _serve_mp4(path: Path, start_response) -> list[bytes]:
+    data = path.read_bytes()
+    start_response(
+        "200 OK",
+        [
+            ("Content-Type", "video/mp4"),
+            ("Content-Length", str(len(data))),
+        ],
+    )
+    return [data]
+
+
+def wsgi_app(post_dir: Path):
     """Return a minimal WSGI application."""
+    from video_arena.review import build_review_html, load_arena_manifest
+
+    post_dir = post_dir.resolve()
+    variants_dir = post_dir / "_variants"
+    arena_dir = variants_dir / "video-arena"
 
     def app(environ, start_response):
         path = environ.get("PATH_INFO", "/").lstrip("/")
         variants = read_variants(variants_dir)
         manifest = read_manifest(variants_dir)
-        post_title = manifest.get("title", variants_dir.parent.name)
+        post_title = manifest.get("title", post_dir.name)
+        arena_manifest = load_arena_manifest(arena_dir)
+        has_arena = arena_manifest is not None
+
+        # Video arena: /arena/{provider}/video.mp4
+        if path.startswith("arena/") and path.endswith("/video.mp4"):
+            provider_id = path[len("arena/") : -len("/video.mp4")]
+            video_path = arena_dir / provider_id / "video.mp4"
+            if video_path.is_file():
+                return _serve_mp4(video_path, start_response)
+            body = render_page(
+                post_title,
+                "<p>Video not found for this provider.</p>",
+                arena_link=has_arena,
+            )
+            encoded = body.encode("utf-8")
+            start_response(
+                "404 Not Found",
+                [
+                    ("Content-Type", "text/html; charset=utf-8"),
+                    ("Content-Length", str(len(encoded))),
+                ],
+            )
+            return [encoded]
+
+        if path == "arena":
+            if not arena_manifest:
+                body = render_page(
+                    post_title,
+                    "<p>No video arena yet. Run <code>generate_video_arena.py</code> first.</p>",
+                    active="arena",
+                    arena_link=False,
+                )
+                status = "404 Not Found"
+            else:
+                body = build_review_html(
+                    arena_dir,
+                    arena_manifest,
+                    href_for=lambda pid: f"/arena/{pid}/video.mp4",
+                    back_href="/",
+                )
+                status = "200 OK"
+            encoded = body.encode("utf-8")
+            start_response(
+                status,
+                [
+                    ("Content-Type", "text/html; charset=utf-8"),
+                    ("Content-Length", str(len(encoded))),
+                ],
+            )
+            return [encoded]
 
         if not path or path == "index.html":
-            body = render_index(manifest, variants)
+            body = render_index(manifest, variants, has_arena=has_arena)
             status = "200 OK"
         else:
             # Nav links are generated as key.replace("/", "-"), so reverse that mapping.
@@ -313,11 +392,15 @@ def wsgi_app(variants_dir: Path):
             key = url_to_key.get(path, path)
             if key in variants:
                 card_html = platform_card(key, variants[key])
-                body = render_page(post_title, card_html, active=key)
+                body = render_page(
+                    post_title, card_html, active=key, arena_link=has_arena
+                )
                 status = "200 OK"
             else:
                 body = render_page(
-                    "Not found", "<p>Variant not found. Has it been generated yet?</p>"
+                    "Not found",
+                    "<p>Variant not found. Has it been generated yet?</p>",
+                    arena_link=has_arena,
                 )
                 status = "404 Not Found"
 
@@ -361,9 +444,12 @@ def main() -> None:
     print("Preview server running:")
     print(f"  Local:   http://localhost:{args.port}/")
     print(f"  Network: http://{lan_ip}:{args.port}/  (open on Android)")
+    arena_dir = variants_dir / "video-arena"
+    if (arena_dir / "manifest.json").is_file():
+        print(f"  Arena:   http://localhost:{args.port}/arena")
     print("Press Ctrl-C to stop.")
 
-    httpd = make_server("0.0.0.0", args.port, wsgi_app(variants_dir))
+    httpd = make_server("0.0.0.0", args.port, wsgi_app(args.post_dir.resolve()))
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

@@ -286,9 +286,8 @@ def main() -> None:
         "api_key_set": bool(cfg.api_key),
     }
     if args.show_key_mask:
-        # _mask_api_key returns only first-4/last-4 chars — not sensitive.
-        info["api_key_mask"] = _mask_api_key(cfg.api_key)  # noqa: S106
-    print(json.dumps(info, indent=2))  # lgtm[py/clear-text-logging-sensitive-data]
+        info["api_key_mask"] = _mask_api_key(cfg.api_key)
+    print(json.dumps(info, indent=2))
 
 
 if __name__ == "__main__":

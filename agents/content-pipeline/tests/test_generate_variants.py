@@ -286,11 +286,15 @@ class TestGenerateVariants:
     def test_dry_run_no_files_written(self, tmp_path):
         post_dir = self._write_post(tmp_path)
         fake_client = make_fake_client("content")
-        with patch(
-            "generate_variants.anthropic.Anthropic", return_value=fake_client
-        ), patch.dict("os.environ", {"ANTHROPIC_API_KEY": "fake-key"}):
+        with patch("generate_variants.anthropic.Anthropic", return_value=fake_client):
             generate_variants(post_dir, dry_run=True)
         assert not (post_dir / "_variants").exists()
+        assert fake_client.messages.create.call_count == 0
+
+    def test_dry_run_requires_no_api_key(self, tmp_path):
+        post_dir = self._write_post(tmp_path)
+        with patch.dict("os.environ", {}, clear=True):
+            generate_variants(post_dir, dry_run=True)  # must not raise
 
     def test_api_called_for_each_variant(self, tmp_path):
         post_dir = self._write_post(tmp_path)

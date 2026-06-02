@@ -308,8 +308,9 @@ def wsgi_app(variants_dir: Path):
             body = render_index(manifest, variants)
             status = "200 OK"
         else:
-            # path like "bluesky" or "youtube-script"
-            key = path.replace("-", "/", 1) if path.startswith("youtube") else path
+            # Nav links are generated as key.replace("/", "-"), so reverse that mapping.
+            url_to_key = {k.replace("/", "-"): k for k in PLATFORM_META}
+            key = url_to_key.get(path, path)
             if key in variants:
                 card_html = platform_card(key, variants[key])
                 body = render_page(post_title, card_html, active=key)

@@ -54,7 +54,7 @@ pcioasis-blog/content/posts/<section>/<slug>/index.md
 pcioasis-blog/
 ├── content/posts/<section>/<slug>/
 │   ├── index.md                  ← source article
-│   └── _variants/                ← generated (gitignored by default, committed on PR branch)
+│   └── _variants/                ← generated; gitignored on main, committed only on content/*-variants branches
 │       ├── manifest.json
 │       ├── planetkesten.md
 │       ├── kbroughton.md

@@ -245,7 +245,7 @@ PLATFORM_SPECS = {
 }
 
 
-def build_messages(source_md: str, spec: str, canonical_url: str) -> list[dict]:
+def build_messages(source_md: str, spec: str, canonical_url: str) -> tuple[list[dict], str]:
     """Build the messages array with prompt caching on the source article."""
     system = (
         "You are an expert technical content writer specialising in PCI-DSS, "
@@ -307,16 +307,6 @@ def generate_variants(post_dir: Path, dry_run: bool = False) -> None:
     variants_dir = post_dir / "_variants"
     youtube_dir = variants_dir / "youtube"
 
-    if not dry_run:
-        variants_dir.mkdir(exist_ok=True)
-        youtube_dir.mkdir(exist_ok=True)
-
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        sys.exit("ANTHROPIC_API_KEY environment variable not set")
-
-    client = anthropic.Anthropic(api_key=api_key)
-
     tasks: list[tuple[str, Path]] = [
         # Blogs
         ("planetkesten", variants_dir / "planetkesten.md"),
@@ -345,19 +335,28 @@ def generate_variants(post_dir: Path, dry_run: bool = False) -> None:
 
     source_md = f"# {meta.get('title', '')}\n\n{body}"
 
+    if dry_run:
+        for variant_key, out_path in tasks:
+            print(f"  [dry-run] would generate {variant_key} -> {out_path.relative_to(post_dir)}")
+        return
+
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        sys.exit("ANTHROPIC_API_KEY environment variable not set")
+
+    variants_dir.mkdir(exist_ok=True)
+    youtube_dir.mkdir(exist_ok=True)
+
+    client = anthropic.Anthropic(api_key=api_key)
+
     results: dict[str, str] = {}
     for variant_key, out_path in tasks:
         print(f"  Generating {variant_key}...", flush=True)
         spec = PLATFORM_SPECS[variant_key]
         text = call_claude(client, source_md, spec, canonical_url)
         results[variant_key] = text
-        if not dry_run:
-            out_path.write_text(text + "\n", encoding="utf-8")
-            print(f"    -> {out_path.relative_to(post_dir)}")
-        else:
-            print(
-                f"    [dry-run] would write {out_path.relative_to(post_dir)} ({len(text)} chars)"
-            )
+        out_path.write_text(text + "\n", encoding="utf-8")
+        print(f"    -> {out_path.relative_to(post_dir)}")
 
     if not dry_run:
         manifest = {

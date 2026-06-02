@@ -144,7 +144,8 @@ def assemble_pr(post_dir: Path, repo: str, base_branch: str, dry_run: bool) -> N
         )
 
     manifest = read_manifest(variants_dir)
-    canonical = manifest.get("canonical", f"https://blog.pcioasis.com/posts/{slug}/")
+    section = post_dir.parent.name.lower()
+    canonical = manifest.get("canonical", f"https://blog.pcioasis.com/posts/{section}/{slug}/")
 
     branch_name = f"content/{slug}-variants"
 

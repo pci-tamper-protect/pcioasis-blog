@@ -22,7 +22,7 @@ jobs:
       - name: Check out pcioasis-blog
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
           token: ${{ secrets.PLANETKESTEN_PAT }}
 
       - name: Set up Python
@@ -39,7 +39,7 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "dirs=${{ inputs.post_path }}" >> "$GITHUB_OUTPUT"
           else
-            dirs=$(git diff --name-only HEAD~1 HEAD \
+            dirs=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} \
               | grep 'content/posts/.*/index\.md' \
               | xargs -I{} dirname {} \
               | sort -u \

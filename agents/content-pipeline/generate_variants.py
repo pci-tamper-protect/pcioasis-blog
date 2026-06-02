@@ -73,6 +73,32 @@ def parse_frontmatter(text: str) -> tuple[dict[str, Any], str]:
 # Prompt helpers
 # ---------------------------------------------------------------------------
 
+# Output format contract used by downstream publish agents:
+#
+#   Blog variants (planetkesten, kbroughton):
+#     First line: META_DESCRIPTION: <≤155 chars>
+#     Then a blank line, then the Markdown body.
+#
+#   LinkedIn:
+#     First line: META_DESCRIPTION: <≤155 chars>
+#     Then the plain-text body.
+#
+#   Clapper:
+#     HOOK: <≤8 words>
+#     TALK: <bullet 1>
+#     ...
+#     TALK: <bullet N>
+#     <blank line>
+#     CAPTION: <caption text ending with canonical URL>
+#
+#   YouTube Shorts:
+#     CAPTION: <≤100 chars + hashtags + [CLAPPER_URL]>
+#     OVERLAY: <≤6 words>
+#     OVERLAY: <≤8 words>
+#
+#   Mastodon: CW: on first line (existing convention).
+#   All others: plain text with canonical URL on last line.
+
 PLATFORM_SPECS = {
     "planetkesten": dedent(
         """\
@@ -81,8 +107,12 @@ PLATFORM_SPECS = {
         - Lead with a relatable real-world hook (e.g. "ever wondered how your credit card is protected?")
         - Avoid jargon; when technical terms are unavoidable, define them inline
         - Friendly, curious tone — like explaining to a smart friend, not a colleague
+        - Mobile-friendly: keep paragraphs to 2–3 sentences max; use subheadings every 150–200 words
         - Preserve key takeaways and diagrams (reference them as "[diagram N]")
-        - Output: valid Markdown with an H1 title, introduction, and 3–5 sections
+        REQUIRED output format (agents parse this):
+          Line 1: META_DESCRIPTION: <one sentence, ≤155 chars, suitable for og:description>
+          Line 2: blank
+          Lines 3+: valid Markdown with an H1 title, introduction, and 3–5 sections
         """
     ),
     "kbroughton": dedent(
@@ -93,7 +123,11 @@ PLATFORM_SPECS = {
         - Include implementation details, threat-model edge cases, or protocol specifics
         - Reference RFCs, CVEs, or specs by number where relevant
         - Dry, precise tone — no filler sentences
-        - Output: valid Markdown with an H1 title and structured sections
+        - Mobile-friendly: short paragraphs (2–3 sentences), code blocks for anything executable
+        REQUIRED output format (agents parse this):
+          Line 1: META_DESCRIPTION: <one sentence, ≤155 chars, suitable for og:description>
+          Line 2: blank
+          Lines 3+: valid Markdown with an H1 title and structured sections
         """
     ),
     "linkedin": dedent(
@@ -103,17 +137,22 @@ PLATFORM_SPECS = {
         - Lead with a business risk or regulatory angle, not a technical one
         - One concrete takeaway actionable for someone running a PCI-compliant product
         - Professional but not stiff; first-person voice is fine
+        - Mobile-friendly: single-sentence paragraphs separated by blank lines; no walls of text
         - End with 3–5 relevant hashtags on a separate line
-        - Output: plain text (LinkedIn doesn't render Markdown headings well); use blank lines between paragraphs
+        REQUIRED output format (agents parse this):
+          Line 1: META_DESCRIPTION: <one sentence, ≤155 chars, suitable for og:description>
+          Line 2: blank
+          Lines 3+: plain text body (LinkedIn ignores Markdown headings); blank lines between paragraphs
         """
     ),
     "bluesky": dedent(
         f"""\
         Write a Bluesky post — MAXIMUM {BLUESKY_LIMIT} characters including spaces.
-        - Hook in first sentence, context in second, call-to-action in third
+        - Hook in first sentence (≤10 words), context in second, call-to-action in third
         - End with the canonical URL as a plain link on its own line
         - Include 2–3 relevant hashtags inline (not at the end)
         - Tone: sharp and opinionated; infosec community audience
+        - Mobile-first: reads well as a single glance on a small screen
         - Output: ONLY the post text, no extra commentary
         """
     ),
@@ -123,32 +162,34 @@ PLATFORM_SPECS = {
         - First line MUST be: CW: <one-line content warning summarising the topic>
         - Blank line after CW, then the post body
         - Assume infosec-savvy readers; technical depth welcome
+        - Mobile-friendly: short sentences, emoji sparingly for visual anchoring
         - Mention any relevant #infosec, #PCI, or topic hashtags
         - End with the canonical URL
-        - Output: ONLY the post text including the CW line
+        - Output: ONLY the post text including the CW line (agents check for CW: prefix)
         """
     ),
     "pixelfed": dedent(
         """\
         Write an image post caption for Pixelfed (Instagram-style, max 2200 chars).
         - Opens with a compelling visual description of the key diagram or concept image
-        - 2–4 short paragraphs; mobile-friendly — short sentences
-        - Heavy on emoji to aid scannability (but don't overdo it)
-        - Ends with 10–15 relevant hashtags on their own line
+        - 2–4 short paragraphs; mobile-first — max 2 sentences per paragraph
+        - Emoji at the start of each paragraph for thumb-scroll scannability
         - Include the canonical URL before the hashtags
+        - Ends with 10–15 relevant hashtags on their own line
         - Output: ONLY the caption text
         """
     ),
     "clapper": dedent(
         f"""\
-        Write a Clapper short-form video caption/script (max {CLAPPER_LIMIT} chars).
-        Clapper is a US-first, Texas-origin short-video platform popular with creators
-        who value free speech and domestic ownership. Audience: curious adults, not deep-tech.
-        - Hook line for on-screen text overlay (≤8 words), prefixed with HOOK:
-        - 3–5 talking-point bullets the creator reads to camera, prefixed with TALK:
-        - Caption text for the post itself (conversational, hashtags welcome)
-        - End with canonical URL
-        - Output: HOOK line, then TALK bullets, then a blank line, then the caption
+        Write a Clapper short-form video caption/script (max {CLAPPER_LIMIT} chars total).
+        Clapper is a US-first, Texas-origin short-video platform. Audience: curious adults, not deep-tech.
+        REQUIRED output format (agents parse each prefixed line):
+          HOOK: <on-screen text overlay, ≤8 words, punchy>
+          TALK: <talking point 1 the creator reads to camera>
+          TALK: <talking point 2>
+          ... (3–5 TALK lines total)
+          <blank line>
+          CAPTION: <caption for the post itself; conversational, hashtags welcome, ends with canonical URL>
         """
     ),
     "twitter_xref": dedent(
@@ -164,7 +205,7 @@ PLATFORM_SPECS = {
     "tiktok_xref": dedent(
         """\
         Write a SHORT TikTok caption (max 150 chars) that references an existing Clapper post.
-        Clapper is the primary platform; TikTok, Douyin, and RedNote are secondary cross-references.
+        Clapper is the primary platform; TikTok is a secondary cross-reference.
         - Acknowledge the full version is on Clapper first
         - Leave a placeholder [CLAPPER_URL] where the user will paste the Clapper link
         - 2–3 TikTok-friendly hashtags
@@ -187,6 +228,7 @@ PLATFORM_SPECS = {
         RedNote has strong reach with tech-curious and professional audiences.
         Clapper is the primary short-form platform; this is a cross-reference.
         - Engaging lifestyle-adjacent hook (RedNote skews aspirational)
+        - Mobile-first: 1–2 sentence paragraphs, line breaks for breathing room
         - Bilingual: body in English, hashtags in both English and Chinese
         - Reference the Clapper video with placeholder [CLAPPER_URL]
         - End with 5–8 hashtags mixing English and Chinese
@@ -195,20 +237,21 @@ PLATFORM_SPECS = {
     ),
     "youtube_shorts": dedent(
         """\
-        Write a YouTube Shorts caption and on-screen text script (max 100 chars caption).
+        Write a YouTube Shorts caption and on-screen text script.
         YouTube Shorts reposts the same short-form video produced for Clapper.
-        - CAPTION: one punchy line (≤100 chars) with 2–3 hashtags, references Clapper [CLAPPER_URL]
-        - OVERLAY LINE 1: on-screen hook text (≤6 words)
-        - OVERLAY LINE 2: on-screen payoff text (≤8 words)
-        - Output: CAPTION line, then OVERLAY LINE 1, then OVERLAY LINE 2
+        REQUIRED output format (agents parse each prefixed line):
+          CAPTION: <≤100 chars + 2–3 hashtags + [CLAPPER_URL]>
+          OVERLAY: <on-screen hook text, ≤6 words>
+          OVERLAY: <on-screen payoff text, ≤8 words>
+        Output: exactly those three labelled lines, nothing else.
         """
     ),
     "reels_xref": dedent(
         """\
         Write an Instagram Reels caption (max 2200 chars) for a cross-posted Clapper video.
         Instagram Reels is a secondary platform; Pixelfed is the primary image/video platform.
-        - Opens with a visual hook or bold statement (Reels audiences scroll fast)
-        - 3–4 short sentences; emoji encouraged
+        - Opens with a visual hook or bold statement (Reels audiences scroll fast on mobile)
+        - Mobile-first: 1–2 sentences per paragraph, emoji at start of each
         - Reference Clapper original with placeholder [CLAPPER_URL]
         - End with 10–15 hashtags mixing broad (#security) and niche (#zkTLS) terms
         - Output: ONLY the caption text
@@ -221,24 +264,25 @@ PLATFORM_SPECS = {
           INTRO (30s): hook + what the viewer will learn
           SECTION 1–4 (60–90s each): one concept per section, cued to diagrams
           OUTRO (30s): recap + subscribe CTA + links
-        Formatting rules:
-          - Prefix each section heading with ## and include a duration hint, e.g. ## INTRO [0:00–0:30]
-          - Inline diagram cues in [brackets]: e.g. [show diagram 1 — TLS handshake]
+        Formatting rules (agents and video tools parse these markers):
+          - Prefix each section heading with ## and include a duration hint: ## INTRO [0:00–0:30]
+          - Diagram cues in square brackets: [show diagram 1 — TLS handshake]
           - Write exactly as spoken: contractions, short sentences, rhetorical questions
           - Mark pauses as [PAUSE] and emphasis as *word*
+          - Keep sentences ≤15 words — reads well as on-screen captions on mobile
         Output: Markdown with the structure above
         """
     ),
     "youtube_description": dedent(
         """\
-        Write a YouTube video description (max 5000 chars).
+        Write a YouTube video description optimised for SEO and mobile (max 5000 chars).
         Sections (separated by blank lines):
-          1. Hook paragraph (2–3 sentences)
+          1. Hook paragraph (2–3 short sentences; first 125 chars show without "Show more" on mobile)
           2. What you'll learn (bullet list, 4–6 items)
-          3. Chapters placeholder — output the literal text: CHAPTERS_PLACEHOLDER
+          3. Chapters — output the literal text: CHAPTERS_PLACEHOLDER
           4. Links: canonical blog post URL, related posts (placeholder [RELATED_URL])
           5. About the channel (2 sentences)
-          6. Hashtags: 8–10 relevant tags
+          6. Hashtags: 8–10 relevant tags (YouTube uses first 3 as video hashtags)
         Output: plain text; no Markdown heading syntax (YouTube ignores it)
         """
     ),

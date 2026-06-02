@@ -97,7 +97,7 @@ General-purpose infra agents (SDLC indexer, MCP server) remain in `pcioasis-ops`
 
 ### Phase 1 — Text variant generation ✅ BUILT
 
-**Status:** Complete. 34/34 tests passing.
+**Status:** Complete. 45/45 tests passing.
 
 **What it does:**
 - `generate_variants.py` reads `index.md`, calls Claude API (claude-opus-4-7 with prompt caching), writes 16 platform variants into `_variants/`
@@ -198,6 +198,72 @@ After ethical-first platforms are live (≥24h), post xrefs to dominant platform
 | `PIXELFED_ACCESS_TOKEN` | pcioasis-blog repo | Phase 4 |
 | `LINKEDIN_ACCESS_TOKEN` | pcioasis-blog repo | Phase 4 |
 | `PEERTUBE_TOKEN` | pcioasis-blog repo | Phase 4 |
+| `YOUTUBE_OAUTH_CLIENT_ID` | pcioasis-blog repo | Phase 6 cross-linking |
+| `YOUTUBE_OAUTH_CLIENT_SECRET` | pcioasis-blog repo | Phase 6 cross-linking |
+| `YOUTUBE_OAUTH_REFRESH_TOKEN` | pcioasis-blog repo | Phase 6 cross-linking |
+
+---
+
+### Phase 6 — Post-deploy cross-linking agent 🔲 TODO (separate PR)
+
+After both the blog post and the long-form YouTube video are live and have public URLs, stitch them together automatically.
+
+**Trigger:** workflow `crosslink-post-deploy.yml` — manual dispatch with inputs:
+- `slug` (e.g. `zktls-proof-of-provenance`)
+- `youtube_video_id` (e.g. `dQw4w9WgXcQ`)
+
+**State contract:** Phase 4/5 publish agents write URLs back into `_variants/manifest.json`:
+```json
+{
+  "published": {
+    "youtube_video_id": "...",
+    "bluesky_post_url": "https://bsky.app/profile/.../post/...",
+    "linkedin_post_url": "...",
+    ...
+  }
+}
+```
+The cross-linker reads this manifest — no separate state store needed.
+
+**Agent: `crosslink.py`**
+
+Steps (all idempotent — safe to re-run):
+
+1. **YouTube → blog**: POST a pinned YouTube comment via YouTube Data API v3:
+   > "Full write-up + diagrams: <canonical_url> #PCI #zkTLS"
+
+2. **Blog → YouTube**: Open a PR that patches `index.md` to append a Hugo shortcode:
+   ```
+   {{< youtube VIDEO_ID >}}
+   ```
+   Branch: `content/<slug>-crosslink`, PR title: "Add YouTube embed to <slug>"
+
+3. **Bluesky reply**: Post a reply to the original Bluesky post:
+   > "🎥 Video is live: <youtube_url>"
+
+4. **LinkedIn update** (optional): If LinkedIn API supports post edits, append video link; otherwise skip (LinkedIn posts are not easily editable after 24h).
+
+**APIs needed:**
+
+| Action | API | Auth |
+|---|---|---|
+| Post YouTube comment | YouTube Data API v3 `commentThreads.insert` | OAuth 2.0, `youtube.force-ssl` scope |
+| Create GitHub PR | GitHub REST / `gh` CLI | `PLANETKESTEN_PAT` (existing) |
+| Bluesky reply | AT Protocol `com.atproto.repo.createRecord` | existing `BLUESKY_APP_PASSWORD` |
+
+**New secrets needed:**
+
+| Secret | Where |
+|---|---|
+| `YOUTUBE_OAUTH_CLIENT_ID` | pcioasis-blog repo |
+| `YOUTUBE_OAUTH_CLIENT_SECRET` | pcioasis-blog repo |
+| `YOUTUBE_OAUTH_REFRESH_TOKEN` | pcioasis-blog repo |
+
+**Design notes:**
+- YouTube comment is the highest-value action (permanent, on-platform, drives blog traffic)
+- Blog PR preserves human review gate for `index.md` changes
+- Agent must verify the YouTube video is actually public before posting (handle `processingStatus != "succeeded"`)
+- Bluesky threading: need to record the root post's `uri` + `cid` in manifest during Phase 4
 
 ---
 
@@ -207,3 +273,6 @@ After ethical-first platforms are live (≥24h), post xrefs to dominant platform
 - [ ] PeerTube instance: using tilvids.com (educational/tech reach)
 - [ ] kbroughton.github.io Hugo sync: add Hugo-format output mode to `sync_blog_posts.py` in pcioasis-ops, or add a second sync agent here?
 - [ ] `sync_blog_posts.py` currently lives in pcioasis-ops; move to pcioasis-blog for consistency?
+- [ ] Phase 6: YouTube OAuth refresh token must be pre-authorized interactively; decide where to store and rotate it (GCP Secret Manager vs GitHub secret)
+- [ ] Phase 6: LinkedIn post edits are blocked after 24h — accept skip or find workaround
+- [ ] Phase 6: Bluesky root post `uri`+`cid` must be persisted in manifest during Phase 4 publish step (add to `publish_bluesky.py` contract)

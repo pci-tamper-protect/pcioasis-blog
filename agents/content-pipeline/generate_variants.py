@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Generate platform-specific content variants from a Hugo blog post.
 
-Reads an index.md from pcioasis-blog, calls Claude API with prompt caching,
+Reads an index.md from pcioasis-blog, calls an LLM (Anthropic, Azure OpenAI, or OpenAI),
 and writes audience-targeted variants into a _variants/ subdirectory.
+
+Credentials (first match wins): ANTHROPIC_API_KEY, then Azure OpenAI env pair,
+then OPENAI_API_KEY / AI_API_KEY, then AI_SECRET_FILE (/tmp/ai). See ai_backend.py.
 
 Outputs:
   _variants/
@@ -25,22 +28,27 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 from pathlib import Path
 from textwrap import dedent
 from typing import Any
 
-import anthropic
 import yaml
 
-MODEL = "claude-opus-4-7"
-CACHE_TYPE = "ephemeral"
+from ai_backend import (
+    build_anthropic_messages,
+    complete,
+    describe_backend,
+    resolve_backend,
+)
 
 MASTODON_ACCOUNT = "@BHINFOSECURITY@infosec.exchange"
 BLUESKY_LIMIT = 300
 MASTODON_LIMIT = 500
 CLAPPER_LIMIT = 2200  # caption chars; video itself is separate
+
+# Re-export for tests that import build_messages from this module.
+build_messages = build_anthropic_messages
 
 
 # ---------------------------------------------------------------------------
@@ -245,48 +253,6 @@ PLATFORM_SPECS = {
 }
 
 
-def build_messages(source_md: str, spec: str, canonical_url: str) -> tuple[list[dict], str]:
-    """Build the messages array with prompt caching on the source article."""
-    system = (
-        "You are an expert technical content writer specialising in PCI-DSS, "
-        "payments security, and cloud engineering. You transform source blog posts "
-        "into platform-specific content variants. Follow the output format instructions precisely. "
-        "Do not add commentary or explanations outside the requested output."
-    )
-
-    user_cached: dict = {
-        "type": "text",
-        "text": (
-            f"SOURCE ARTICLE (canonical URL: {canonical_url}):\n\n"
-            f"---BEGIN SOURCE---\n{source_md}\n---END SOURCE---\n\n"
-            "Generate the variant described in the next message."
-        ),
-        "cache_control": {"type": CACHE_TYPE},
-    }
-
-    user_task: dict = {
-        "type": "text",
-        "text": f"VARIANT INSTRUCTIONS:\n\n{spec}",
-    }
-
-    return [
-        {"role": "user", "content": [user_cached, user_task]},
-    ], system
-
-
-def call_claude(
-    client: anthropic.Anthropic, source_md: str, spec: str, canonical_url: str
-) -> str:
-    messages, system = build_messages(source_md, spec, canonical_url)
-    response = client.messages.create(
-        model=MODEL,
-        max_tokens=4096,
-        system=system,
-        messages=messages,
-    )
-    return response.content[0].text.strip()
-
-
 # ---------------------------------------------------------------------------
 # Main generation logic
 # ---------------------------------------------------------------------------
@@ -308,26 +274,19 @@ def generate_variants(post_dir: Path, dry_run: bool = False) -> None:
     youtube_dir = variants_dir / "youtube"
 
     tasks: list[tuple[str, Path]] = [
-        # Blogs
         ("planetkesten", variants_dir / "planetkesten.md"),
         ("kbroughton", variants_dir / "kbroughton.md"),
-        # Professional
         ("linkedin", variants_dir / "linkedin.md"),
-        # Ethical-first micro-social
         ("bluesky", variants_dir / "bluesky.txt"),
         ("mastodon", variants_dir / "mastodon.txt"),
         ("pixelfed", variants_dir / "pixelfed.txt"),
-        # Short-form video — Clapper is primary (US/Texas-first)
         ("clapper", variants_dir / "clapper.txt"),
-        # Short-form xrefs (secondary platforms)
         ("tiktok_xref", variants_dir / "tiktok-xref.txt"),
         ("douyin_xref", variants_dir / "douyin-xref.txt"),
         ("rednote_xref", variants_dir / "rednote-xref.txt"),
         ("youtube_shorts", variants_dir / "youtube-shorts.txt"),
         ("reels_xref", variants_dir / "reels-xref.txt"),
-        # Cross-references from dominant text platforms
         ("twitter_xref", variants_dir / "twitter-xref.txt"),
-        # Long-form YouTube
         ("youtube_script", youtube_dir / "script.md"),
         ("youtube_description", youtube_dir / "description.md"),
         ("youtube_chapters", youtube_dir / "chapters.txt"),
@@ -340,36 +299,34 @@ def generate_variants(post_dir: Path, dry_run: bool = False) -> None:
             print(f"  [dry-run] would generate {variant_key} -> {out_path.relative_to(post_dir)}")
         return
 
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        sys.exit("ANTHROPIC_API_KEY environment variable not set")
+    backend = resolve_backend()
+    print(f"LLM backend: {describe_backend(backend)}")
 
     variants_dir.mkdir(exist_ok=True)
     youtube_dir.mkdir(exist_ok=True)
-
-    client = anthropic.Anthropic(api_key=api_key)
 
     results: dict[str, str] = {}
     for variant_key, out_path in tasks:
         print(f"  Generating {variant_key}...", flush=True)
         spec = PLATFORM_SPECS[variant_key]
-        text = call_claude(client, source_md, spec, canonical_url)
+        text = complete(source_md, spec, canonical_url, backend=backend)
         results[variant_key] = text
         out_path.write_text(text + "\n", encoding="utf-8")
         print(f"    -> {out_path.relative_to(post_dir)}")
 
-    if not dry_run:
-        manifest = {
-            "slug": slug,
-            "canonical": canonical_url,
-            "title": meta.get("title", ""),
-            "date": str(meta.get("date", "")),
-            "variants": {k: str(p.relative_to(post_dir)) for k, p in tasks},
-        }
-        (variants_dir / "manifest.json").write_text(
-            json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
-        )
-        print(f"\nVariants written to {variants_dir}")
+    manifest = {
+        "slug": slug,
+        "canonical": canonical_url,
+        "title": meta.get("title", ""),
+        "date": str(meta.get("date", "")),
+        "llm_backend": backend.name,
+        "llm_model": backend.model,
+        "variants": {k: str(p.relative_to(post_dir)) for k, p in tasks},
+    }
+    (variants_dir / "manifest.json").write_text(
+        json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+    )
+    print(f"\nVariants written to {variants_dir}")
 
 
 def main() -> None:

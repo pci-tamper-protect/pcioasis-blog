@@ -21,7 +21,16 @@ Use `--project` (not `--directory`) so post paths stay relative to `pcioasis-blo
 
 ```bash
 cd ~/projectos/pcioasis-blog
-export ANTHROPIC_API_KEY="sk-ant-…"
+
+# Credentials (first match): ANTHROPIC_API_KEY → Azure OpenAI env → OPENAI_API_KEY / AI_API_KEY → /tmp/ai
+eval "$(./deploy/secrets/export-macos-keychain.sh)"   # sets AZURE_OPENAI_* and AI_API_KEY
+export AZURE_OPENAI_DEPLOYMENT="your-deployment-name"  # required for Azure backend
+
+# Or Anthropic only (must be sk-ant-…, not an Azure key):
+# export ANTHROPIC_API_KEY="sk-ant-…"
+
+# If you previously ran export-macos-keychain.sh, clear a bad alias:
+# unset ANTHROPIC_API_KEY
 
 uv run --project agents/content-pipeline \
   python agents/content-pipeline/generate_variants.py \
@@ -51,5 +60,3 @@ cd agents/content-pipeline
 uv sync --extra dev
 uv run pytest -q
 ```
-
-`requirements.txt` is removed; use `uv sync` from this directory.

@@ -79,6 +79,7 @@ pcioasis-blog/
 │   ├── preview_server.py         ← Phase 1: mobile-friendly local preview
 │   ├── assemble_pr.py            ← Phase 1: commit variants + open review PR
 │   ├── pyproject.toml / uv.lock
+│   ├── ai_backend.py / env_help.py
 │   └── tests/
 │       └── test_generate_variants.py
 │
@@ -107,14 +108,23 @@ General-purpose infra agents (SDLC indexer, MCP server) remain in `pcioasis-ops`
 **Run locally:**
 ```bash
 cd ~/projectos/pcioasis-blog
-cd agents/content-pipeline && uv sync
-python agents/content-pipeline/generate_variants.py content/posts/zkTLS/zktls-proof-of-provenance
-python agents/content-pipeline/preview_server.py content/posts/zkTLS/zktls-proof-of-provenance
+uv sync --project agents/content-pipeline
+export ANTHROPIC_API_KEY="…"
+uv run --project agents/content-pipeline \
+  python agents/content-pipeline/generate_variants.py \
+  content/posts/zkTLS/zktls-proof-of-provenance
+uv run --project agents/content-pipeline \
+  python agents/content-pipeline/preview_server.py \
+  content/posts/zkTLS/zktls-proof-of-provenance
 # open http://<your-IP>:5050/ on Android
-python agents/content-pipeline/assemble_pr.py content/posts/zkTLS/zktls-proof-of-provenance
+uv run --project agents/content-pipeline \
+  python agents/content-pipeline/assemble_pr.py \
+  content/posts/zkTLS/zktls-proof-of-provenance
 ```
 
-**Required secrets:** `ANTHROPIC_API_KEY`, `PLANETKESTEN_PAT`
+**Required secrets (CI):** `ANTHROPIC_API_KEY`, `PLANETKESTEN_PAT`
+
+**Local / Azure:** `deploy/secrets/` bootstrap → `eval "$(./deploy/secrets/export-macos-keychain.sh)"` and `AZURE_OPENAI_DEPLOYMENT`. Generator picks Anthropic (`sk-ant-…`) → Azure OpenAI → OpenAI. See `deploy/secrets/README.md`.
 
 ---
 

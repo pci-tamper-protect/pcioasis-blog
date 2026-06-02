@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -189,17 +189,22 @@ zkTLS lets you prove a TLS session happened without revealing credentials.
 """
 
 
-def make_fake_client(response_text: str = "Generated content"):
-    """Return a mock Anthropic client that returns a fixed response."""
-    mock_response = MagicMock()
-    mock_response.content = [MagicMock(text=response_text)]
+FAKE_ANTHROPIC_KEY = "sk-ant-api03-test-key"
 
-    mock_messages = MagicMock()
-    mock_messages.create.return_value = mock_response
 
-    mock_client = MagicMock()
-    mock_client.messages = mock_messages
-    return mock_client
+def patch_complete(response_text: str = "Generated content"):
+    """Patch ai_backend.complete to avoid real API calls."""
+    return patch("generate_variants.complete", return_value=response_text)
+
+
+def anthropic_env(**overrides: str):
+    """Hermetic env: valid Anthropic key shape, no secret file, no ambient LLM vars."""
+    env = {
+        "ANTHROPIC_API_KEY": FAKE_ANTHROPIC_KEY,
+        "CONTENT_PIPELINE_SKIP_SECRET_FILE": "1",
+        **overrides,
+    }
+    return patch.dict("os.environ", env, clear=True)
 
 
 class TestGenerateVariants:
@@ -213,28 +218,19 @@ class TestGenerateVariants:
 
     def test_creates_variants_dir(self, tmp_path):
         post_dir = self._write_post(tmp_path)
-        fake_client = make_fake_client("Hello world")
-        with patch(
-            "generate_variants.anthropic.Anthropic", return_value=fake_client
-        ), patch.dict("os.environ", {"ANTHROPIC_API_KEY": "fake-key"}):
+        with patch_complete("Hello world"), anthropic_env():
             generate_variants(post_dir)
         assert (post_dir / "_variants").is_dir()
 
     def test_creates_youtube_subdir(self, tmp_path):
         post_dir = self._write_post(tmp_path)
-        fake_client = make_fake_client("content")
-        with patch(
-            "generate_variants.anthropic.Anthropic", return_value=fake_client
-        ), patch.dict("os.environ", {"ANTHROPIC_API_KEY": "fake-key"}):
+        with patch_complete("content"), anthropic_env():
             generate_variants(post_dir)
         assert (post_dir / "_variants" / "youtube").is_dir()
 
     def test_all_variant_files_created(self, tmp_path):
         post_dir = self._write_post(tmp_path)
-        fake_client = make_fake_client("Generated text")
-        with patch(
-            "generate_variants.anthropic.Anthropic", return_value=fake_client
-        ), patch.dict("os.environ", {"ANTHROPIC_API_KEY": "fake-key"}):
+        with patch_complete("Generated text"), anthropic_env():
             generate_variants(post_dir)
 
         variants_dir = post_dir / "_variants"
@@ -261,10 +257,7 @@ class TestGenerateVariants:
 
     def test_manifest_written(self, tmp_path):
         post_dir = self._write_post(tmp_path)
-        fake_client = make_fake_client("content")
-        with patch(
-            "generate_variants.anthropic.Anthropic", return_value=fake_client
-        ), patch.dict("os.environ", {"ANTHROPIC_API_KEY": "fake-key"}):
+        with patch_complete("content"), anthropic_env():
             generate_variants(post_dir)
         manifest_path = post_dir / "_variants" / "manifest.json"
         assert manifest_path.exists()
@@ -274,10 +267,7 @@ class TestGenerateVariants:
 
     def test_canonical_url_derived_from_section(self, tmp_path):
         post_dir = self._write_post(tmp_path)
-        fake_client = make_fake_client("content")
-        with patch(
-            "generate_variants.anthropic.Anthropic", return_value=fake_client
-        ), patch.dict("os.environ", {"ANTHROPIC_API_KEY": "fake-key"}):
+        with patch_complete("content"), anthropic_env():
             generate_variants(post_dir)
         manifest = json.loads((post_dir / "_variants" / "manifest.json").read_text())
         # section = parent dir name = "zkTLS" -> lowercased in URL
@@ -285,11 +275,10 @@ class TestGenerateVariants:
 
     def test_dry_run_no_files_written(self, tmp_path):
         post_dir = self._write_post(tmp_path)
-        fake_client = make_fake_client("content")
-        with patch("generate_variants.anthropic.Anthropic", return_value=fake_client):
+        with patch_complete("content") as mock_complete:
             generate_variants(post_dir, dry_run=True)
         assert not (post_dir / "_variants").exists()
-        assert fake_client.messages.create.call_count == 0
+        mock_complete.assert_not_called()
 
     def test_dry_run_requires_no_api_key(self, tmp_path):
         post_dir = self._write_post(tmp_path)
@@ -298,34 +287,42 @@ class TestGenerateVariants:
 
     def test_api_called_for_each_variant(self, tmp_path):
         post_dir = self._write_post(tmp_path)
-        fake_client = make_fake_client("content")
-        with patch(
-            "generate_variants.anthropic.Anthropic", return_value=fake_client
-        ), patch.dict("os.environ", {"ANTHROPIC_API_KEY": "fake-key"}):
+        with patch_complete("content") as mock_complete, anthropic_env():
             generate_variants(post_dir)
-        # 16 variants expected
-        assert fake_client.messages.create.call_count == 16
+        assert mock_complete.call_count == 16
 
     def test_missing_api_key_exits(self, tmp_path):
         post_dir = self._write_post(tmp_path)
-        with patch.dict("os.environ", {}, clear=True):
-            # ANTHROPIC_API_KEY not set
+        with patch.dict(
+            "os.environ",
+            {"CONTENT_PIPELINE_SKIP_SECRET_FILE": "1"},
+            clear=True,
+        ):
             with pytest.raises(SystemExit):
                 generate_variants(post_dir)
+
+    def test_azure_env_fallback(self, tmp_path):
+        post_dir = self._write_post(tmp_path)
+        env = {
+            "AZURE_OPENAI_ENDPOINT": "https://example.openai.azure.com",
+            "AI_API_KEY": "azure-key",
+            "AZURE_OPENAI_DEPLOYMENT": "gpt-4o",
+        }
+        with patch_complete("azure content"), patch.dict("os.environ", env, clear=True):
+            generate_variants(post_dir)
+        manifest = json.loads((post_dir / "_variants" / "manifest.json").read_text())
+        assert manifest["llm_backend"] == "azure_openai"
 
     def test_missing_index_md_exits(self, tmp_path):
         post_dir = tmp_path / "empty-post"
         post_dir.mkdir()
-        with patch.dict("os.environ", {"ANTHROPIC_API_KEY": "fake-key"}):
+        with anthropic_env():
             with pytest.raises(SystemExit):
                 generate_variants(post_dir)
 
     def test_variant_content_written_verbatim(self, tmp_path):
         post_dir = self._write_post(tmp_path)
-        fake_client = make_fake_client("EXACT OUTPUT TEXT")
-        with patch(
-            "generate_variants.anthropic.Anthropic", return_value=fake_client
-        ), patch.dict("os.environ", {"ANTHROPIC_API_KEY": "fake-key"}):
+        with patch_complete("EXACT OUTPUT TEXT"), anthropic_env():
             generate_variants(post_dir)
         bluesky = (post_dir / "_variants" / "bluesky.txt").read_text()
         assert "EXACT OUTPUT TEXT" in bluesky

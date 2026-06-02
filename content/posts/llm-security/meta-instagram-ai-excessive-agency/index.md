@@ -12,6 +12,10 @@ tags:
   - ai-agents
   - pci-dss
 section: llm-security
+cover:
+  image: ai-support-bot-attack.svg
+  alt: "Instagram-style chat showing an attacker asking Meta AI to link a new email to @jane_w — the bot complies without verifying the original owner"
+  caption: "The full attack: one natural-language sentence, no verification, account gone in under 60 seconds"
 description: >
   Meta's Instagram AI support bot handed attackers $1M+ in premium accounts
   because it had write access to authentication APIs and no confirmation gate.
@@ -48,6 +52,8 @@ recover locked accounts. The attack required nothing exotic:
 5. Original owner gets no alert    (no 2FA prompt, no notification)
 6. Account is theirs in minutes
 ```
+
+{{< figure src="ai-support-bot-attack.svg" alt="Simulated Instagram DM showing the attack request and bot response" >}}
 
 No second factor required. No out-of-band confirmation to the original email.
 No human review. No rate limit triggered. Accounts were being flipped on

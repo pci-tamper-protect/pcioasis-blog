@@ -95,11 +95,15 @@ class TestPlatformSpecs:
     def test_mastodon_mentions_infosec_exchange(self):
         assert "infosec.exchange" in PLATFORM_SPECS["mastodon"]
 
-    def test_clapper_mentions_texas(self):
+    def test_clapper_mentions_us_first(self):
         spec = PLATFORM_SPECS["clapper"].lower()
-        assert (
-            "texas" in spec or "tx" in spec or "us-first" in spec or "domestic" in spec
-        )
+        assert "us-first" in spec or "clapper" in spec
+
+    def test_linkedin_krebs_format(self):
+        assert "From the post:" in PLATFORM_SPECS["linkedin"]
+
+    def test_bluesky_documents_sweet_spot(self):
+        assert "150" in PLATFORM_SPECS["bluesky"] and "220" in PLATFORM_SPECS["bluesky"]
 
     def test_twitter_xref_has_placeholder(self):
         assert "[BLUESKY_URL]" in PLATFORM_SPECS["twitter_xref"]

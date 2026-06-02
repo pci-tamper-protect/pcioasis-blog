@@ -2,3 +2,6 @@ public/
 resources/_gen/
 .hugo_build.lock
 .DS_Store
+
+# Generated content variants (committed only on content/*-variants PR branches)
+content/posts/**/_variants/

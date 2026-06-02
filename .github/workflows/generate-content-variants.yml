@@ -1,0 +1,67 @@
+name: Generate content variants
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "content/posts/**/index.md"
+  workflow_dispatch:
+    inputs:
+      post_path:
+        description: "Relative path to post directory (e.g. content/posts/zkTLS/zktls-proof-of-provenance)"
+        required: true
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Check out pcioasis-blog
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PLANETKESTEN_PAT }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r agents/content-pipeline/requirements.txt
+
+      - name: Detect changed post directories
+        id: posts
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "dirs=${{ inputs.post_path }}" >> "$GITHUB_OUTPUT"
+          else
+            dirs=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} \
+              | grep 'content/posts/.*/index\.md' \
+              | xargs -I{} dirname {} \
+              | sort -u \
+              | tr '\n' ' ')
+            echo "dirs=$dirs" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Generate variants for each changed post
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          for post_dir in ${{ steps.posts.outputs.dirs }}; do
+            echo "Processing $post_dir"
+            python agents/content-pipeline/generate_variants.py "$post_dir"
+          done
+
+      - name: Open review PR for each post
+        env:
+          GH_TOKEN: ${{ secrets.PLANETKESTEN_PAT }}
+        run: |
+          for post_dir in ${{ steps.posts.outputs.dirs }}; do
+            python agents/content-pipeline/assemble_pr.py \
+              "$post_dir" \
+              --repo pci-tamper-protect/pcioasis-blog
+          done

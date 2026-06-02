@@ -1,4 +1,4 @@
-"""Run the four-provider video arena for one post."""
+"""Run the multi-provider video arena for one post."""
 
 from __future__ import annotations
 

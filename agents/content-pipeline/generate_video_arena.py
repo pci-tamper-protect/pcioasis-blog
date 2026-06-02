@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run four-provider short video arena for a Hugo post.
+"""Run short-video arena for a Hugo post (5 providers by default).
 
 Requires text variants (generate_variants.py) first. Writes MP4 candidates and
 review.html under _variants/video-arena/.
@@ -10,7 +10,7 @@ Usage:
     content/posts/zkTLS/zktls-proof-of-provenance
 
   # Single provider:
-  ... --only replicate_hailuo
+  ... --only azure_sora_v1
 
 See docs/content-pipeline/VIDEO_ARENA.md for credentials.
 """
@@ -31,7 +31,7 @@ def main() -> None:
         "--only",
         action="append",
         metavar="PROVIDER",
-        help="Run one provider: azure_sora, vertex_veo, bedrock_luma, replicate_hailuo",
+        help="Run one provider: azure_sora, azure_sora_v1, vertex_veo, bedrock_luma, replicate_hailuo",
     )
     parser.add_argument(
         "--skip-critique",

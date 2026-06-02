@@ -1,24 +1,26 @@
-# Video arena — four-provider short-form shootout
+# Video arena — multi-provider short-form shootout
 
-Phase 1 generates **text metadata** (`clapper.txt`, `youtube-shorts.txt`, etc.). Phase 3a (this doc) generates **actual MP4 candidates** from four APIs, then a **human review** step picks one clip for Clapper / Shorts.
+Phase 1 generates **text metadata** (`clapper.txt`, `youtube-shorts.txt`, etc.). Phase 3a (this doc) generates **actual MP4 candidates** from five APIs (two on Azure Foundry), then a **human review** step picks one clip for Clapper / Shorts.
 
 Text-to-video quality is inconsistent; treat this as an **arena**, not a single vendor bet.
 
 ---
 
-## Top 4 providers (mapped to your credits)
+## Providers (mapped to your credits)
 
 | Slot | Provider | Model | Why this slot | Billing home | Short-form fit |
 |------|----------|-------|---------------|--------------|----------------|
-| **1** | **Azure AI Foundry** | **Sora 2** (`sora-2`) | Largest Foundry balance; native audio; portrait `720×1280`; 4/8/12s | Azure subscription / Foundry deployment | Clapper / Shorts vertical |
+| **1a** | **Azure AI Foundry** | **Sora 2** (`sora-2`) | Primary Foundry pick: native audio, image anchor, remix | Azure subscription / Foundry deployment | Clapper / Shorts vertical |
+| **1b** | **Azure AI Foundry** | **Sora (v1)** (`sora`) | Second Foundry contender on same endpoint/key — text-only baseline, often wider regional availability than Sora 2 | Same Foundry resource (separate deployment) | A/B vs Sora 2 on identical prompt |
 | **2** | **Google Vertex AI** | **Veo 3.1 Fast** (`veo-3.1-fast-generate-001`) | GCP $10k credits; reference images from post diagrams; `9:16` | GCP project billing | Image→video from slide/diagram |
 | **3** | **AWS Bedrock** | **Luma Ray 2** (`luma.ray-v2:0`) | $25k Bedrock; async S3 output; 5s/9s `720p` | AWS account (`us-west-2`) | Fast iteration, no Azure lock-in |
 | **4** | **Replicate** (comparison lane) | **MiniMax Hailuo 2.3** (`minimax/hailuo-2.3`) | Pay-per-run (~$0.50/6s); no cloud commit; A/B vs big three | Replicate API key | Cheap baseline / second opinion |
 
+**Azure dual deployment:** deploy both `sora` and `sora-2` on the same Foundry OpenAI resource. The arena uses one endpoint/key; Sora 2 reads `AZURE_SORA_MODEL` / `AZURE_OPENAI_DEPLOYMENT`; Sora v1 reads `AZURE_SORA_V1_DEPLOYMENT` (defaults to `sora`). Sora v1 ignores reference images (text→video only on Foundry today).
+
 **Not in the arena (by design):**
 
 - **Amazon Nova Reel** — Legacy on Bedrock; prefer **Luma Ray 2**.
-- **Sora 1** — Use **Sora 2** on Foundry unless you need sub-720p legacy resolutions.
 - **“Nano banana”** — If you meant a Gemini image model, that is **not** video; use **Veo** on Vertex for GCP video credits.
 
 ---
@@ -41,7 +43,7 @@ Audio: subtle room tone only if the API supports native audio.
 Avoid: text overlays, watermarks, distorted faces, extra fingers.
 ```
 
-Each provider adapter adds vendor-specific parameters (resolution, duration, reference image).
+Each provider adapter adds vendor-specific parameters (resolution, duration, reference image). **Sora v1** runs the same text prompt without the diagram anchor.
 
 ---
 
@@ -49,7 +51,8 @@ Each provider adapter adds vendor-specific parameters (resolution, duration, ref
 
 | Provider | Env vars |
 |----------|----------|
-| Azure Sora | `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_KEY`, `AZURE_SORA_DEPLOYMENT=sora-2` (or deployment name in portal) |
+| Azure Sora 2 | `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_KEY`, `AZURE_SORA_MODEL=sora-2` (or `AZURE_OPENAI_DEPLOYMENT`) |
+| Azure Sora v1 | Same endpoint/key as above + `AZURE_SORA_V1_DEPLOYMENT=sora` (separate deployment name in portal) |
 | Vertex Veo | `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION=us-central1`, ADC (`gcloud auth application-default login`) |
 | Bedrock Luma | `AWS_REGION=us-west-2`, AWS creds with `bedrock:InvokeModel` + S3 write |
 | Replicate | `REPLICATE_API_TOKEN` |
@@ -63,12 +66,14 @@ Store secrets via existing `deploy/secrets/` patterns; never commit keys.
 ```text
 content/posts/<section>/<slug>/_variants/video-arena/
   manifest.json           # run id, prompts, per-provider status
-  prompt.txt              # shared text prompt sent to all four
+  prompt.txt              # shared text prompt sent to all providers
   review.html             # human comparison UI (open locally)
   azure_sora/
     job.json
     video.mp4             # or SKIPPED.md
     critique.md           # LLM text critique from prompt + metadata
+  azure_sora_v1/
+    ...
   vertex_veo/
     ...
   bedrock_luma/
@@ -82,7 +87,7 @@ content/posts/<section>/<slug>/_variants/video-arena/
 
 ## Human review workflow
 
-1. Run arena (generates up to four MP4s — may take 5–15 min each):
+1. Run arena (generates up to five MP4s — may take 5–15 min each):
 
    ```bash
    uv run --project agents/content-pipeline \
@@ -115,6 +120,7 @@ uv run --project agents/content-pipeline \
 | Bedrock Luma Ray 2 | ~$0.50–1.60 / clip (per-second on Bedrock) |
 | Vertex Veo 3.1 Fast | Billed to GCP credits (check Vertex pricing page) |
 | Azure Sora 2 | Per-second on Foundry (check deployment meter) |
+| Azure Sora v1 | Per-second on Foundry (same resource; compare head-to-head) |
 
 Run arena **once per post** at review-PR time, not on every `index.md` typo.
 
@@ -134,6 +140,7 @@ Run arena **once per post** at review-PR time, not on every `index.md` typo.
 
 ## References
 
+- [Azure Sora (v1) on Foundry](https://ai.azure.com/catalog/models/sora)
 - [Azure Sora 2 on Foundry](https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/video-generation)
 - [Vertex Veo text-to-video](https://cloud.google.com/vertex-ai/generative-ai/docs/video/generate-videos-from-text)
 - [Bedrock Luma Ray 2](https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-luma.html)

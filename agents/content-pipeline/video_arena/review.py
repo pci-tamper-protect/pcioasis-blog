@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 def write_review_html(arena_dir: Path, manifest: dict) -> Path:
-    """Write review.html listing four provider slots with video tags when present."""
+    """Write review.html listing provider slots with video tags when present."""
     providers = manifest.get("providers", {})
     rows = []
     for pid, data in providers.items():
@@ -72,7 +72,7 @@ def write_review_html(arena_dir: Path, manifest: dict) -> Path:
 </head>
 <body>
   <h1>Video arena — {post_title}</h1>
-  <p>Compare four providers. Pick one clip for <code>_variants/clapper/clip.mp4</code>, then record in <code>WINNER.txt</code>.</p>
+  <p>Compare providers side-by-side. Pick one clip for <code>_variants/clapper/clip.mp4</code>, then record in <code>WINNER.txt</code>.</p>
   <h2>Shared prompt</h2>
   <div class="prompt">{prompt_pre}</div>
   <div class="grid">{body}</div>

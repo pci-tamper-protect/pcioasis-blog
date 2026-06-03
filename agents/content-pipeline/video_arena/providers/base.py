@@ -76,6 +76,7 @@ class ArenaProvider(ABC):
             result.write(out_dir)
             return result
 
+        out_dir.mkdir(parents=True, exist_ok=True)
         try:
             result = self.generate(prompt, out_dir, reference_image=reference_image)
         except Exception as exc:  # noqa: BLE001 — surface provider errors in arena manifest

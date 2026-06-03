@@ -23,6 +23,8 @@ chmod +x deploy/scripts/verify-video-credentials.sh
 ./deploy/scripts/verify-video-credentials.sh
 ```
 
+Export scripts print **`ok:`** / **`error:`** / **`warning:`** on **stderr**; only `export …` lines go to stdout for `eval "$(./deploy/…/export-*.sh)"`.
+
 **Smoke test (Sora only, ~4s clip):**
 
 ```bash

@@ -50,6 +50,7 @@ if not project or project in ("REPLACE_ME", "YOUR_PROJECT_ID"):
 
 exports = {
     "GOOGLE_CLOUD_PROJECT": project,
+    "GOOGLE_CLOUD_QUOTA_PROJECT": project,
     "GOOGLE_CLOUD_LOCATION": (data.get("location") or "us-central1").strip(),
     "VERTEX_VEO_MODEL": (data.get("model") or "veo-3.1-fast-generate-001").strip(),
 }
@@ -66,6 +67,24 @@ export_emit_or_fail "Vertex Veo" "$SOURCE" "$EXPORTS" || exit 1
 if command -v gcloud >/dev/null 2>&1; then
   if gcloud auth application-default print-access-token >/dev/null 2>&1; then
     export_report_ok "Vertex ADC credentials present (application-default login)"
+    adc_quota="$(python3 - <<'PY' 2>/dev/null || true
+import json
+from pathlib import Path
+p = Path.home() / ".config" / "gcloud" / "application_default_credentials.json"
+if p.is_file():
+    q = json.load(open(p)).get("quota_project_id", "")
+    if q:
+        print(q)
+PY
+)"
+    cfg_project="$(python3 - "$CONFIG_FILE" <<'PY' 2>/dev/null || true
+import json, sys
+print(json.load(open(sys.argv[1])).get("project_id", "").strip())
+PY
+)"
+    if [[ -n "$adc_quota" && -n "$cfg_project" && "$adc_quota" != "$cfg_project" ]]; then
+      echo "warning: Vertex Veo: ADC quota project is $adc_quota but config project is $cfg_project; GOOGLE_CLOUD_QUOTA_PROJECT is set to $cfg_project" >&2
+    fi
   else
     echo "warning: Vertex Veo: GOOGLE_CLOUD_PROJECT set but ADC not logged in — run: gcloud auth application-default login" >&2
   fi

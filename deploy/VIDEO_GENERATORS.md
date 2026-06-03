@@ -16,28 +16,30 @@ How to obtain API keys and config files for each **video arena** provider (`gene
 | Bedrock Luma Ray 2 | `bedrock_luma` | [`deploy/aws/`](aws/README.md) | `/tmp/bedrock-luma.json` | [`deploy/aws/export-bedrock-luma.sh`](aws/export-bedrock-luma.sh) |
 | Replicate Hailuo 2.3 | `replicate_hailuo` | [`deploy/replicate/`](replicate/README.md) | `/tmp/replicate.json` | [`deploy/replicate/export-replicate.sh`](replicate/export-replicate.sh) |
 
-**Verify everything configured:**
+| Test script (per provider) | `./deploy/…/test-*.sh` | Permission check (default) or `--generate` |
+
+**Verify config (env only):**
 
 ```bash
 chmod +x deploy/scripts/verify-video-credentials.sh
 ./deploy/scripts/verify-video-credentials.sh
 ```
 
-Export scripts print **`ok:`** / **`error:`** / **`warning:`** on **stderr**; only `export …` lines go to stdout for `eval "$(./deploy/…/export-*.sh)"`.
-
-**Smoke test (Sora only, ~4s clip):**
+**Smoke test (API permission probe — default, fast):**
 
 ```bash
-eval "$(./deploy/secrets/export-sora.sh)"
-export AZURE_SORA_SECONDS=4
-uv run --project agents/content-pipeline python -c "
-from pathlib import Path
-import sys; sys.path.insert(0,'agents/content-pipeline')
-from video_arena.providers.azure_sora import AzureSoraProvider
-r = AzureSoraProvider().run('Vertical 9:16, 4s, padlock on laptop screen.', Path('/tmp/sora-smoke'))
-print(r.status, r.message)
-"
+chmod +x deploy/scripts/test-video-provider.sh deploy/**/test-*.sh
+
+./deploy/vertex/test-veo.sh
+./deploy/secrets/test-sora.sh
+./deploy/aws/test-bedrock-luma.sh
+./deploy/replicate/test-replicate.sh
+./deploy/scripts/test-video-provider.sh all --load
 ```
+
+**Minimal generation (slow, billed):** append `--generate` to any test script above.
+
+Export scripts print **`ok:`** / **`error:`** on **stderr**; only `export …` lines go to stdout for `eval`.
 
 ---
 

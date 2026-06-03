@@ -1,12 +1,12 @@
-# Video generator credentials — setup hub
+# Media generators — setup hub
 
-How to obtain API keys and config files for each **video arena** provider (`generate_video_arena.py`). Chat/LLM creds for text variants are separate — see [`deploy/secrets/README.md`](secrets/README.md).
+How to obtain API keys and config for **video arena** cloud providers (`generate_video_arena.py`) and **local audio / research** tools for narration, podcasts, and dubbing. Chat/LLM creds for text variants are separate — see [`deploy/secrets/README.md`](secrets/README.md).
 
-**Pipeline docs:** [`docs/content-pipeline/VIDEO_ARENA.md`](../docs/content-pipeline/VIDEO_ARENA.md)
+**Pipeline docs:** [`docs/content-pipeline/VIDEO_ARENA.md`](../docs/content-pipeline/VIDEO_ARENA.md) · Phase 3b narration: [`docs/content-pipeline/PLAN.md`](../docs/content-pipeline/PLAN.md)
 
 ---
 
-## Quick map
+## Quick map — Video arena (cloud T2V)
 
 | Provider | Arena ID | Deploy folder | Secret file (local) | Export script |
 |----------|----------|---------------|---------------------|---------------|
@@ -40,6 +40,19 @@ chmod +x deploy/scripts/test-video-provider.sh deploy/**/test-*.sh
 **Minimal generation (slow, billed):** append `--generate` to any test script above.
 
 Export scripts print **`ok:`** / **`error:`** on **stderr**; only `export …` lines go to stdout for `eval`.
+
+---
+
+## Quick map — Local audio & research
+
+Self-hosted tools for **narration**, **podcasts**, and **dubbing** (no video arena slot yet). Prefer these over cloud TTS when you want privacy or to avoid ElevenLabs-style subscriptions.
+
+| Tool | Role | Deploy folder | Config | Auth |
+|------|------|---------------|--------|------|
+| [Open Notebook](https://www.open-notebook.ai/) | Research → multi-speaker **podcasts** / narration from notes | [`deploy/open-notebook/`](open-notebook/README.md) | [`open-notebook-config.json.example`](open-notebook/open-notebook-config.json.example) | Provider keys in UI (or Ollama + local TTS) |
+| [OmniVoice Studio](https://github.com/debpalash/OmniVoice-Studio) | Local **TTS**, voice clone, **video dubbing**, MCP | [`deploy/omnivoice/`](omnivoice/README.md) | [`omnivoice-config.json.example`](omnivoice/omnivoice-config.json.example) | None (optional HF token for diarization) |
+
+**Read:** [Open Notebook vs Notebook LM](https://www.open-notebook.ai/) · [OmniVoice overview (MarkTechPost, May 2026)](https://www.marktechpost.com/2026/05/26/meet-omnivoice-studio-a-local-open-source-alternative-to-elevenlabs/)
 
 ---
 
@@ -276,6 +289,68 @@ eval "$(./deploy/replicate/export-replicate.sh)"
 
 ---
 
+## 5. Open Notebook — podcasts & narration from research
+
+Privacy-first, self-hosted [Notebook LM alternative](https://github.com/lfnovo/open-notebook). Best for turning post research into **multi-speaker podcast audio** (async, customizable speakers). Supports cloud TTS (OpenAI, Google, ElevenLabs) or **local TTS** for fully offline narration.
+
+### Manual: Docker
+
+1. Clone [lfnovo/open-notebook](https://github.com/lfnovo/open-notebook).
+2. `docker compose up -d` — UI **8502**, REST API **5055**.
+3. **Settings → API Keys** — add LLM provider(s) and optional TTS (or use [Ollama example compose](https://github.com/lfnovo/open-notebook/blob/main/examples/docker-compose-ollama.yml) for local models).
+
+### Config file
+
+[`deploy/open-notebook/open-notebook-config.json.example`](open-notebook/open-notebook-config.json.example) — base URLs only; API keys stay in the Open Notebook UI.
+
+### Content pipeline
+
+- Input: research notes, `script.md`, or ingested PDFs/YouTube in a notebook.
+- Output: podcast MP3 for Phase 3b (`_variants/youtube/`) or narration tracks.
+- Docs: [`deploy/open-notebook/README.md`](open-notebook/README.md) · [Podcasts explained](https://github.com/lfnovo/open-notebook/blob/main/docs/2-CORE-CONCEPTS/podcasts-explained.md)
+
+---
+
+## 6. OmniVoice Studio — local ElevenLabs alternative
+
+Desktop app ([debpalash/OmniVoice-Studio](https://github.com/debpalash/OmniVoice-Studio)): **voice cloning** (~3s sample), **video dubbing** (YouTube URL or local file), dictation, diarization, and an **MCP server** for Cursor. Runs fully local — no subscription or cloud API key for core TTS.
+
+**Overview:** [Meet OmniVoice Studio (MarkTechPost)](https://www.marktechpost.com/2026/05/26/meet-omnivoice-studio-a-local-open-source-alternative-to-elevenlabs/)
+
+### Manual: install & run
+
+1. Install `ffmpeg`, [Bun](https://bun.sh), [uv](https://docs.astral.sh/uv/).
+2. Clone repo and start dev stack:
+
+```bash
+git clone https://github.com/debpalash/OmniVoice-Studio.git
+cd OmniVoice-Studio
+uv sync && bun install && bun dev
+```
+
+3. UI: http://localhost:5173 · API: http://localhost:8000 (model weights download on first use).
+4. Optional: Hugging Face token for Pyannote diarization — see repo `docs/setup/huggingface-token.md`.
+
+### Config / env
+
+Copy [`deploy/omnivoice/omnivoice-config.json.example`](omnivoice/omnivoice-config.json.example) for local URLs and default engine.
+
+| Variable | Example |
+|----------|---------|
+| `OMNIVOICE_TTS_BACKEND` | `omnivoice` (or `cosyvoice`, `mlx-audio`, `kittentts`, …) |
+
+### MCP (Cursor)
+
+MCP server starts with `bun dev` — point your MCP client at the local OmniVoice endpoint to drive TTS/dubbing from agents without the desktop UI.
+
+### Content pipeline
+
+- Phase 3b: generate narration MP3 from script text without `ELEVENLABS_API_KEY`.
+- Dub arena clips or YouTube sources before ffmpeg assembly.
+- Docs: [`deploy/omnivoice/README.md`](omnivoice/README.md)
+
+---
+
 ## Run the arena
 
 ```bash
@@ -312,4 +387,7 @@ Preview on phone: `preview_server.py` → `http://<LAN-IP>:5050/arena`
 |------|---------|
 | [`deploy/secrets/`](secrets/README.md) | Chat LLM + Sora GCP bootstrap, Keychain, `load_ai_config.py` |
 | [`deploy/az/`](az/README.md) | `az` deploy scripts for Sora 2 |
+| [`deploy/open-notebook/`](open-notebook/README.md) | Open Notebook — podcasts & narration |
+| [`deploy/omnivoice/`](omnivoice/README.md) | OmniVoice Studio — local TTS / dubbing / MCP |
 | [`docs/content-pipeline/VIDEO_ARENA.md`](../docs/content-pipeline/VIDEO_ARENA.md) | Arena workflow, output layout, human review |
+| [`docs/content-pipeline/PLAN.md`](../docs/content-pipeline/PLAN.md) | Phase 3b long-form video + narration |

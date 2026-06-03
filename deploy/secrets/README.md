@@ -4,7 +4,8 @@ Bootstrap scripts move Azure AI Foundry credentials from a **local file** into m
 
 Azure CLI deploy helpers (Sora 2, list deployments): `deploy/az/scripts/` — see `deploy/az/README.md`.
 
-**Video arena (all providers):** [`deploy/VIDEO_GENERATORS.md`](../VIDEO_GENERATORS.md)
+**Video arena (cloud T2V):** [`deploy/VIDEO_GENERATORS.md`](../VIDEO_GENERATORS.md)  
+**Local audio (Open Notebook, OmniVoice):** same hub — sections 5–6
 
 ## Secret file format
 

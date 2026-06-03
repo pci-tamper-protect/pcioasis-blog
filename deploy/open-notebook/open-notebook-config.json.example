@@ -1,0 +1,5 @@
+{
+  "ui_base_url": "http://localhost:8502",
+  "api_base_url": "http://localhost:5055",
+  "notes": "Add LLM/TTS provider keys in Open Notebook Settings → API Keys (not in this file)"
+}

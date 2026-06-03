@@ -335,8 +335,30 @@ def _json_response(start_response, payload: dict, status: str = "200 OK") -> lis
     return [body]
 
 
+def _read_post_json(environ) -> dict:
+    try:
+        length = int(environ.get("CONTENT_LENGTH", "0"))
+    except ValueError:
+        length = 0
+    raw = environ["wsgi.input"].read(length) if length else b"{}"
+    try:
+        return json.loads(raw.decode("utf-8") or "{}")
+    except json.JSONDecodeError as exc:
+        raise ValueError("invalid JSON") from exc
+
+
+def _arena_action_response(start_response, message: str, *, reload: bool = True) -> list[bytes]:
+    return _json_response(start_response, {"ok": True, "reload": reload, "message": message})
+
+
 def wsgi_app(post_dir: Path):
     """Return a minimal WSGI application."""
+    from video_arena.arena_actions import (
+        rebuild_prompt_from_clapper,
+        regenerate_all_provider_videos,
+        regenerate_provider_video,
+        run_final_pass,
+    )
     from video_arena.prompt_store import save_arena_prompt, save_final_pass_brief
     from video_arena.review import build_review_html, load_arena_manifest
     from video_arena.thumbnails import apply_thumbnail_selection
@@ -353,9 +375,75 @@ def wsgi_app(post_dir: Path):
         arena_manifest = load_arena_manifest(arena_dir)
         has_arena = arena_manifest is not None
 
-        # Video arena: /arena/save-prompt | /arena/{provider}/...
+        # Video arena API and assets
         if path.startswith("arena/"):
             parts = path.split("/")
+            method = environ.get("REQUEST_METHOD", "GET")
+
+            if method == "POST" and len(parts) == 2:
+                try:
+                    payload = _read_post_json(environ)
+                except ValueError:
+                    return _json_response(
+                        start_response,
+                        {"error": "invalid JSON"},
+                        "400 Bad Request",
+                    )
+                action = parts[1]
+                try:
+                    if action == "regenerate-prompt":
+                        if payload.get("prompt"):
+                            save_arena_prompt(arena_dir, str(payload["prompt"]))
+                        rebuild_prompt_from_clapper(post_dir, arena_dir)
+                        return _arena_action_response(
+                            start_response, "Prompt rebuilt from clapper.txt"
+                        )
+                    if action == "regenerate-provider":
+                        pid = payload.get("provider_id")
+                        if not pid:
+                            raise ValueError("missing provider_id")
+                        if payload.get("prompt"):
+                            save_arena_prompt(arena_dir, str(payload["prompt"]))
+                        regenerate_provider_video(post_dir, arena_dir, str(pid))
+                        return _arena_action_response(
+                            start_response, f"Regenerated {pid} video + thumbnails"
+                        )
+                    if action == "regenerate-providers":
+                        ids = payload.get("provider_ids")
+                        if payload.get("prompt"):
+                            save_arena_prompt(arena_dir, str(payload["prompt"]))
+                        ran = regenerate_all_provider_videos(
+                            post_dir, arena_dir, ids
+                        )
+                        return _arena_action_response(
+                            start_response,
+                            f"Regenerated {len(ran)} provider(s)",
+                        )
+                    if action == "regenerate-final-pass":
+                        if payload.get("brief") is not None:
+                            save_final_pass_brief(arena_dir, str(payload["brief"]))
+                        run_final_pass(
+                            post_dir,
+                            arena_dir,
+                            use_llm_brief=bool(payload.get("use_llm_brief", True)),
+                        )
+                        return _arena_action_response(
+                            start_response, "Final pass complete (brief + staged video)"
+                        )
+                except (FileNotFoundError, ValueError) as exc:
+                    return _json_response(
+                        start_response,
+                        {"error": str(exc)},
+                        "400 Bad Request",
+                    )
+                except Exception as exc:  # noqa: BLE001
+                    return _json_response(
+                        start_response,
+                        {"error": str(exc)},
+                        "500 Internal Server Error",
+                        status="500 Internal Server Error",
+                    )
+
             if (
                 len(parts) == 2
                 and parts[1] == "save-final-pass-brief"
@@ -418,6 +506,11 @@ def wsgi_app(post_dir: Path):
                         "400 Bad Request",
                     )
                 return _json_response(start_response, {"ok": True})
+
+            if len(parts) >= 2 and parts[1] == "final-pass":
+                fp_video = arena_dir / "final_pass" / "video.mp4"
+                if len(parts) == 3 and parts[2] == "video.mp4" and fp_video.is_file():
+                    return _serve_mp4(fp_video, start_response)
 
             if len(parts) >= 3:
                 provider_id = parts[1]

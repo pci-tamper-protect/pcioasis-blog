@@ -105,41 +105,36 @@ content/posts/<section>/<slug>/_variants/video-arena/
      content/posts/zkTLS/zktls-proof-of-provenance
    ```
 
-2. Open `review.html` in a browser **or** use the preview server arena tab:
+2. Open the arena dashboard via **preview server** (required for Save / Regenerate):
 
    ```bash
    uv run --project agents/content-pipeline \
      python agents/content-pipeline/preview_server.py POST_DIR
-   # http://<LAN-IP>:5050/arena  — same page, streams MP4s for phone review
+   # http://<LAN-IP>:5050/arena
    ```
 
-3. **Edit the shared prompt** in the review page textarea (same text for all providers). Save via preview server (`/arena` → **Save prompt**), then re-run one provider:
+   Three tabs — work on each independently:
 
-   ```bash
-   uv run --project agents/content-pipeline \
-     python agents/content-pipeline/generate_video_arena.py POST_DIR --only vertex_veo
-   ```
+   | Tab | Save | Regenerate |
+   |-----|------|------------|
+   | **1 · Source text** | `prompt.txt` | Rebuild from `clapper.txt` |
+   | **2 · Videos & thumbnails** | thumbnail click → `poster.jpg` | Per-provider or **all** videos (uses saved prompt) |
+   | **3 · Final pass** | `final_pass_brief.txt` | LLM combine brief + stage `final_pass/video.mp4` from WINNER |
 
-   Saved prompt lives in `_variants/video-arena/prompt.txt` (not rebuilt from `clapper.txt` while that file exists).
-
-4. **Pick a splash thumbnail** per provider (avoids blank Veo lead-in frames):
+3. **Pick a splash thumbnail** per provider (tab 2; avoids blank Veo lead-in frames):
    - **First non-black** — skips black/fade-in at t=0
    - **Highest contrast** — ffmpeg `thumbnail` filter across the clip
    - **Scene change** — up to 4 frames where `scene` score exceeds threshold
    - In **preview_server** (`/arena`), click a tile to save `poster.jpg` + `THUMBNAIL.txt`
    - Static `review.html` on disk: use preview server to persist, or copy manually
 
-5. **Final-pass combine brief** (below the provider grid): describe what to take from each clip
-   (timing, motion, lighting, audio) for the downstream **final-pass agent**. Save via preview
-   server → `final_pass_brief.txt`.
+5. Score each candidate in tab 2 (1–5 motion, notes).
 
-6. Score each candidate (1–5): **motion quality**, **prompt adherence**, **artifacts**, **usable for Clapper without re-edit**.
+6. Write winner to `WINNER.txt` in tab 2 (e.g. `vertex_veo`) — used when you **Regenerate final pass** in tab 3.
 
-7. Write winner to `WINNER.txt` (e.g. `vertex_veo`).
+7. Copy winner → `_variants/clapper/clip.mp4` and `poster.jpg` → `_variants/images/clapper-thumbnail.png` if needed.
 
-8. Copy winner → `_variants/clapper/clip.mp4` and copy `poster.jpg` → `_variants/images/clapper-thumbnail.png` if needed.
-
-9. Proceed with publish PR (Phase 4).
+8. Proceed with publish PR (Phase 4).
 
 **Optional:** Re-run a single provider after tweaking `prompt.txt`:
 

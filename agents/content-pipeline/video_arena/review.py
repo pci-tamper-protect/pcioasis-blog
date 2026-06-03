@@ -82,6 +82,70 @@ def _build_thumbnail_picker(
     """
 
 
+def _build_provider_card(
+    pid: str,
+    data: dict,
+    sub: Path,
+    *,
+    href_for: Callable[[str], str],
+    thumb_href_for: Callable[[str, str], str] | None,
+    api_base: str | None,
+) -> str:
+    video = sub / "video.mp4"
+    critique = sub / "critique.md"
+    status = data.get("status", "unknown")
+    video_tag = ""
+    if video.is_file():
+        src = html.escape(_video_src(pid, href_for))
+        poster_attr = ""
+        if (sub / "poster.jpg").is_file():
+            poster_src = _thumbnail_src(pid, "poster.jpg", thumb_href_for=thumb_href_for)
+            poster_attr = f' poster="{html.escape(poster_src)}"'
+        video_tag = (
+            f'<video controls playsinline src="{src}"{poster_attr} '
+            f'style="width:100%;max-height:420px;background:#000"></video>'
+        )
+    elif (sub / "SKIPPED.md").is_file():
+        video_tag = f"<pre>{html.escape((sub / 'SKIPPED.md').read_text())}</pre>"
+    elif (sub / "FAILED.md").is_file():
+        video_tag = f"<pre>{html.escape((sub / 'FAILED.md').read_text())}</pre>"
+    elif (sub / "DOWNLOAD.md").is_file():
+        video_tag = f"<pre>{html.escape((sub / 'DOWNLOAD.md').read_text())}</pre>"
+    else:
+        video_tag = "<p><em>No video file</em></p>"
+
+    critique_html = ""
+    if critique.is_file():
+        critique_html = (
+            f"<details><summary>Critique</summary><pre>"
+            f"{html.escape(critique.read_text())}</pre></details>"
+        )
+
+    thumb_html = ""
+    if video.is_file():
+        provider_api = f"{api_base}/{pid}" if api_base else ""
+        thumb_html = _build_thumbnail_picker(
+            pid, sub, thumb_href_for=thumb_href_for, api_base=provider_api or None
+        )
+
+    return f"""
+    <section class="card" data-provider-id="{html.escape(pid)}">
+      <h2>{html.escape(data.get('display_name', pid))}</h2>
+      <p><strong>Status:</strong> {html.escape(status)} — {html.escape(data.get('message', ''))}</p>
+      {video_tag}
+      {thumb_html}
+      {critique_html}
+      <div class="card-actions">
+        <button type="button" class="btn-regenerate btn-regenerate-provider"
+                data-provider="{html.escape(pid)}">Regenerate video</button>
+        <span class="action-status" data-role="provider-status" aria-live="polite"></span>
+      </div>
+      <label>Human score (1-5 motion): <input type="number" min="1" max="5" name="{pid}_motion"></label>
+      <label>Notes: <textarea name="{pid}_notes" rows="2" style="width:100%"></textarea></label>
+    </section>
+    """
+
+
 def build_review_html(
     arena_dir: Path,
     manifest: dict,
@@ -91,73 +155,22 @@ def build_review_html(
     back_href: str | None = None,
     api_base: str | None = None,
 ) -> str:
-    """Return HTML for the arena comparison page.
-
-    href_for(provider_id) must return the video URL for that slot (file or HTTP).
-    Defaults to relative paths suitable for review.html on disk.
-    """
     if href_for is None:
         href_for = lambda pid: f"{pid}/video.mp4"  # noqa: E731
 
     providers = manifest.get("providers", {})
-    rows = []
-    for pid, data in providers.items():
-        sub = arena_dir / pid
-        video = sub / "video.mp4"
-        critique = sub / "critique.md"
-        status = data.get("status", "unknown")
-        video_tag = ""
-        if video.is_file():
-            src = html.escape(_video_src(pid, href_for))
-            poster_attr = ""
-            if (sub / "poster.jpg").is_file():
-                poster_src = _thumbnail_src(
-                    pid, "poster.jpg", thumb_href_for=thumb_href_for
-                )
-                poster_attr = f' poster="{html.escape(poster_src)}"'
-            video_tag = (
-                f'<video controls playsinline src="{src}"{poster_attr} '
-                f'style="width:100%;max-height:420px;background:#000"></video>'
-            )
-        elif (sub / "SKIPPED.md").is_file():
-            video_tag = f"<pre>{html.escape((sub / 'SKIPPED.md').read_text())}</pre>"
-        elif (sub / "FAILED.md").is_file():
-            video_tag = f"<pre>{html.escape((sub / 'FAILED.md').read_text())}</pre>"
-        elif (sub / "DOWNLOAD.md").is_file():
-            video_tag = f"<pre>{html.escape((sub / 'DOWNLOAD.md').read_text())}</pre>"
-        else:
-            video_tag = "<p><em>No video file</em></p>"
-
-        critique_html = ""
-        if critique.is_file():
-            critique_html = (
-                f"<details><summary>Critique</summary><pre>"
-                f"{html.escape(critique.read_text())}</pre></details>"
-            )
-
-        thumb_html = ""
-        if video.is_file():
-            provider_api = f"{api_base}/{pid}" if api_base else ""
-            thumb_html = _build_thumbnail_picker(
-                pid,
-                sub,
-                thumb_href_for=thumb_href_for,
-                api_base=provider_api or None,
-            )
-
-        rows.append(
-            f"""
-            <section class="card">
-              <h2>{html.escape(data.get('display_name', pid))}</h2>
-              <p><strong>Status:</strong> {html.escape(status)} — {html.escape(data.get('message', ''))}</p>
-              {video_tag}
-              {thumb_html}
-              {critique_html}
-              <label>Human score (1-5 motion): <input type="number" min="1" max="5" name="{pid}_motion"></label>
-              <label>Notes: <textarea name="{pid}_notes" rows="2" style="width:100%"></textarea></label>
-            </section>
-            """
+    provider_ids = list(providers.keys())
+    cards = [
+        _build_provider_card(
+            pid,
+            data,
+            arena_dir / pid,
+            href_for=href_for,
+            thumb_href_for=thumb_href_for,
+            api_base=api_base,
         )
+        for pid, data in providers.items()
+    ]
 
     post_title = html.escape(manifest.get("title", "Video arena"))
     prompt_raw = load_prompt_text(arena_dir, manifest)
@@ -165,11 +178,29 @@ def build_review_html(
     brief_raw = load_final_pass_brief(arena_dir, manifest)
     brief_area = html.escape(brief_raw)
     api_root = html.escape(api_base) if api_base else ""
+    provider_ids_attr = html.escape(json.dumps(provider_ids))
+
     brief_placeholder = html.escape(
-        "e.g. Open on vertex_veo (0–2s) for stable framing; use azure_sora lighting "
-        "for the laptop beat; avoid Veo black lead-in; keep motion slow; no on-screen text."
+        "e.g. Open on vertex_veo (0–2s); use azure_sora lighting for laptop beat; "
+        "avoid Veo black lead-in; 6s vertical, no on-screen text."
     )
-    body = "\n".join(rows)
+
+    final_video_html = ""
+    fp_job = manifest.get("final_pass") or {}
+    fp_video = arena_dir / "final_pass" / "video.mp4"
+    if fp_video.is_file():
+        fp_src = (
+            f"{api_base}/final-pass/video.mp4" if api_base else "final_pass/video.mp4"
+        )
+        final_video_html = (
+            f'<div class="final-output">'
+            f'<h3>Staged output</h3>'
+            f'<video controls playsinline src="{html.escape(fp_src)}" '
+            f'style="width:100%;max-height:360px;background:#000"></video>'
+            f'<p class="thumb-hint">{html.escape(str(fp_job.get("message", "")))}</p>'
+            f"</div>"
+        )
+
     back_link = ""
     if back_href:
         back_link = f'<p><a href="{html.escape(back_href)}">← Back to variants</a></p>'
@@ -184,6 +215,8 @@ def build_review_html(
                 f"<pre>{html.escape(winner_text)}</pre></div>"
             )
 
+    cards_html = "\n".join(cards) if cards else "<p><em>No provider runs yet.</em></p>"
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -194,10 +227,20 @@ def build_review_html(
     body {{ font-family: system-ui, sans-serif; margin: 1rem; background: #111; color: #eee; }}
     h1 {{ font-size: 1.25rem; }}
     a {{ color: #8ab4ff; }}
+    .arena-tabs {{ display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }}
+    .arena-tabs button {{
+      background: #222; color: #ccc; border: 1px solid #444; border-radius: 8px 8px 0 0;
+      padding: 0.5rem 1rem; cursor: pointer; font-size: 0.85rem;
+    }}
+    .arena-tabs button.active {{ background: #2a5db0; color: #fff; border-color: #2a5db0; }}
+    .tab-panel {{ display: none; padding: 1rem; border: 1px solid #333; border-radius: 0 8px 8px 8px;
+      background: #161616; margin-bottom: 1.5rem; }}
+    .tab-panel.active {{ display: block; }}
+    .workspace {{ margin-bottom: 1rem; }}
+    .workspace h2 {{ font-size: 1rem; margin-bottom: 0.35rem; }}
     .grid {{ display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }}
     .card {{ background: #1a1a1a; padding: 1rem; border-radius: 8px; border: 1px solid #333; }}
-    .prompt {{ background: #222; padding: 1rem; border-radius: 8px; white-space: pre-wrap; font-size: 0.85rem; }}
-    .winner {{ margin-top: 2rem; padding: 1rem; background: #0d3320; border-radius: 8px; }}
+    .winner {{ margin-top: 1rem; padding: 1rem; background: #0d3320; border-radius: 8px; }}
     .thumb-picker {{ margin-top: 1rem; }}
     .thumb-picker h3 {{ font-size: 0.95rem; margin-bottom: 0.35rem; }}
     .thumb-hint {{ font-size: 0.8rem; color: #aaa; margin-bottom: 0.5rem; }}
@@ -212,35 +255,51 @@ def build_review_html(
     .thumb-opt small {{ display: block; font-size: 0.65rem; color: #888; }}
     .thumb-poster-preview {{ max-height: 80px; vertical-align: middle; margin-left: 8px; }}
     .thumb-status {{ font-size: 0.8rem; color: #8ab4ff; margin-top: 0.5rem; min-height: 1.2em; }}
-    .prompt-editor {{ margin-bottom: 1.5rem; }}
-    .prompt-editor textarea {{
+    .workspace textarea {{
       width: 100%; min-height: 11rem; font-family: ui-monospace, monospace;
       font-size: 0.85rem; line-height: 1.45; background: #222; color: #eee;
       border: 1px solid #444; border-radius: 8px; padding: 0.75rem; resize: vertical;
     }}
-    .prompt-actions {{ margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }}
-    .prompt-actions button {{
-      background: #2a5db0; color: #fff; border: none; border-radius: 6px;
-      padding: 0.45rem 0.9rem; cursor: pointer; font-size: 0.85rem;
+    .panel-actions, .card-actions {{
+      margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;
     }}
-    .prompt-actions button:disabled {{ opacity: 0.5; cursor: default; }}
-    .prompt-status {{ font-size: 0.8rem; color: #8ab4ff; min-height: 1.2em; }}
-    .prompt-hint {{ font-size: 0.8rem; color: #aaa; margin-top: 0.35rem; }}
-    .final-pass-editor {{ margin: 1.5rem 0; padding: 1rem; background: #1a1a2e;
-      border: 1px solid #3d3d6b; border-radius: 8px; }}
-    .final-pass-editor h2 {{ font-size: 1rem; color: #c5cae9; }}
+    .panel-actions button, .card-actions button {{
+      border: none; border-radius: 6px; padding: 0.45rem 0.9rem; cursor: pointer;
+      font-size: 0.85rem;
+    }}
+    .btn-save {{ background: #2a5db0; color: #fff; }}
+    .btn-regenerate {{ background: #c45c26; color: #fff; }}
+    button:disabled {{ opacity: 0.5; cursor: default; }}
+    .action-status {{ font-size: 0.8rem; color: #8ab4ff; min-height: 1.2em; }}
+    #tab-final .workspace {{ background: #1a1a2e; border: 1px solid #3d3d6b; border-radius: 8px;
+      padding: 1rem; }}
   </style>
   <script>
-    async function arenaPost(apiRoot, path, payload, statusEl, btn, successMsg, validate) {{
+    const ARENA_API = document.body.dataset.apiRoot || '';
+
+    function showTab(name) {{
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.arena-tabs button').forEach(b => b.classList.remove('active'));
+      const panel = document.getElementById('tab-' + name);
+      const tab = document.querySelector('.arena-tabs button[data-tab="' + name + '"]');
+      if (panel) panel.classList.add('active');
+      if (tab) tab.classList.add('active');
+    }}
+
+    document.querySelectorAll('.arena-tabs button').forEach(btn => {{
+      btn.addEventListener('click', () => showTab(btn.dataset.tab));
+    }});
+
+    async function arenaPost(path, payload, statusEl, btn, successMsg, validate) {{
       if (validate && !validate()) return;
-      if (!apiRoot) {{
+      if (!ARENA_API) {{
         statusEl.textContent = 'Use preview_server.py (/arena) to save to disk';
         return;
       }}
       btn.disabled = true;
       statusEl.textContent = 'Saving…';
       try {{
-        const res = await fetch(apiRoot + path, {{
+        const res = await fetch(ARENA_API + path, {{
           method: 'POST',
           headers: {{ 'Content-Type': 'application/json' }},
           body: JSON.stringify(payload),
@@ -255,31 +314,78 @@ def build_review_html(
       }}
     }}
 
-    (function() {{
-      const apiRoot = document.getElementById('shared-prompt-editor')?.dataset.apiRoot || '';
-      const ta = document.getElementById('shared-prompt-text');
-      const status = document.getElementById('prompt-save-status');
-      const btn = document.getElementById('prompt-save-btn');
-      if (ta && btn && status) {{
-        btn.addEventListener('click', () => arenaPost(
-          apiRoot, '/save-prompt', {{ prompt: ta.value.trim() }}, status, btn,
-          'Saved prompt.txt — re-run providers with --only',
-          () => {{
-            if (!ta.value.trim()) {{ status.textContent = 'Prompt cannot be empty'; return false; }}
-            return true;
-          }}
-        ));
+    async function arenaRegenerate(path, payload, statusEl, btn) {{
+      if (!ARENA_API) {{
+        statusEl.textContent = 'Use preview_server.py (/arena) for regenerate';
+        return;
       }}
-      const briefTa = document.getElementById('final-pass-brief-text');
-      const briefStatus = document.getElementById('final-pass-save-status');
-      const briefBtn = document.getElementById('final-pass-save-btn');
-      if (briefTa && briefBtn && briefStatus) {{
-        briefBtn.addEventListener('click', () => arenaPost(
-          apiRoot, '/save-final-pass-brief', {{ brief: briefTa.value }}, briefStatus, briefBtn,
-          'Saved final_pass_brief.txt for final-pass agent'
-        ));
+      btn.disabled = true;
+      statusEl.textContent = 'Running… (may take several minutes)';
+      try {{
+        const res = await fetch(ARENA_API + path, {{
+          method: 'POST',
+          headers: {{ 'Content-Type': 'application/json' }},
+          body: JSON.stringify(payload),
+        }});
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || res.statusText);
+        statusEl.textContent = data.message || 'Done';
+        if (data.reload) setTimeout(() => location.reload(), 600);
+      }} catch (e) {{
+        statusEl.textContent = 'Error: ' + e.message;
+      }} finally {{
+        btn.disabled = false;
       }}
-    }})();
+    }}
+
+    const promptTa = document.getElementById('shared-prompt-text');
+    const promptStatus = document.getElementById('prompt-save-status');
+    document.getElementById('prompt-save-btn')?.addEventListener('click', () => arenaPost(
+      '/save-prompt', {{ prompt: promptTa.value.trim() }}, promptStatus,
+      document.getElementById('prompt-save-btn'), 'Saved prompt.txt',
+      () => {{
+        if (!promptTa.value.trim()) {{
+          promptStatus.textContent = 'Prompt cannot be empty'; return false;
+        }}
+        return true;
+      }}
+    ));
+    document.getElementById('prompt-regenerate-btn')?.addEventListener('click', () => {{
+      if (!confirm('Rebuild prompt from clapper.txt? This overwrites manual prompt edits.')) return;
+      arenaRegenerate('/regenerate-prompt', {{ from_clapper: true }}, promptStatus,
+        document.getElementById('prompt-regenerate-btn'));
+    }});
+
+    const briefTa = document.getElementById('final-pass-brief-text');
+    const briefStatus = document.getElementById('final-pass-save-status');
+    document.getElementById('final-pass-save-btn')?.addEventListener('click', () => arenaPost(
+      '/save-final-pass-brief', {{ brief: briefTa.value }}, briefStatus,
+      document.getElementById('final-pass-save-btn'), 'Saved combine brief'
+    ));
+    document.getElementById('final-pass-regenerate-btn')?.addEventListener('click', () => arenaRegenerate(
+      '/regenerate-final-pass',
+      {{ brief: briefTa.value, use_llm_brief: true }},
+      briefStatus, document.getElementById('final-pass-regenerate-btn')
+    ));
+
+    document.getElementById('regenerate-all-videos-btn')?.addEventListener('click', () => {{
+      const ids = JSON.parse(document.body.dataset.providerIds || '[]');
+      if (!ids.length) return;
+      if (!confirm('Regenerate ALL provider videos? This is slow and billed.')) return;
+      arenaRegenerate('/regenerate-providers', {{ provider_ids: ids }},
+        document.getElementById('videos-panel-status'),
+        document.getElementById('regenerate-all-videos-btn'));
+    }});
+
+    document.querySelectorAll('.btn-regenerate-provider').forEach(btn => {{
+      btn.addEventListener('click', () => {{
+        const pid = btn.dataset.provider;
+        const status = btn.closest('.card')?.querySelector('[data-role="provider-status"]');
+        const payload = {{ provider_id: pid }};
+        if (promptTa && promptTa.value.trim()) payload.prompt = promptTa.value.trim();
+        arenaRegenerate('/regenerate-provider', payload, status, btn);
+      }});
+    }});
 
     document.querySelectorAll('.thumb-picker').forEach(picker => {{
       const apiBase = picker.dataset.apiBase;
@@ -290,7 +396,7 @@ def build_review_html(
           picker.querySelectorAll('.thumb-opt').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
           if (!apiBase) {{
-            status.textContent = 'Selected ' + choice + ' — open via preview_server.py to save poster.jpg';
+            status.textContent = 'Selected ' + choice + ' — use preview_server for poster.jpg';
             return;
           }}
           status.textContent = 'Saving…';
@@ -312,38 +418,55 @@ def build_review_html(
     }});
   </script>
 </head>
-<body>
+<body data-api-root="{api_root}" data-provider-ids="{provider_ids_attr}">
   {back_link}
   <h1>Video arena — {post_title}</h1>
-  <p>Compare providers side-by-side. Edit the <strong>shared prompt</strong> once, then re-run individual providers for new video only.</p>
-  <section class="prompt-editor" id="shared-prompt-editor" data-api-root="{api_root}">
-    <h2>Shared prompt (all providers)</h2>
-    <p class="prompt-hint">Sent to every T2V API. Save here, then:
-      <code>generate_video_arena.py POST_DIR --only azure_sora</code> (or vertex_veo, etc.).</p>
+  <p>Work in three tabs — each can be saved or regenerated independently.</p>
+
+  <nav class="arena-tabs" aria-label="Arena workspaces">
+    <button type="button" class="active" data-tab="prompt">1 · Source text</button>
+    <button type="button" data-tab="videos">2 · Videos &amp; thumbnails</button>
+    <button type="button" data-tab="final">3 · Final pass</button>
+  </nav>
+
+  <section id="tab-prompt" class="tab-panel active workspace">
+    <h2>Source text (shared T2V prompt)</h2>
+    <p class="thumb-hint">All providers use this prompt. Regenerate rebuilds from <code>clapper.txt</code>.</p>
     <textarea id="shared-prompt-text" spellcheck="true">{prompt_area}</textarea>
-    <div class="prompt-actions">
-      <button type="button" id="prompt-save-btn">Save prompt</button>
-      <span class="prompt-status" id="prompt-save-status" aria-live="polite"></span>
+    <div class="panel-actions">
+      <button type="button" class="btn-save" id="prompt-save-btn">Save</button>
+      <button type="button" class="btn-regenerate" id="prompt-regenerate-btn">Regenerate from clapper</button>
+      <span class="action-status" id="prompt-save-status" aria-live="polite"></span>
     </div>
   </section>
-  <div class="grid">{body}</div>
-  <section class="final-pass-editor prompt-editor" id="final-pass-editor" data-api-root="{api_root}">
-    <h2>Final-pass combine brief</h2>
-    <p class="prompt-hint">After comparing clips above: what to take from each provider for the
-      <strong>final-pass agent</strong> (stitch, re-cut, or re-prompt). Saved as
-      <code>final_pass_brief.txt</code>.</p>
+
+  <section id="tab-videos" class="tab-panel workspace">
+    <h2>Videos &amp; thumbnail feedback</h2>
+    <p class="thumb-hint">Regenerate one provider or all. Saves current source text first if you edited it in tab 1.</p>
+    <div class="panel-actions">
+      <button type="button" class="btn-regenerate" id="regenerate-all-videos-btn">Regenerate all videos</button>
+      <span class="action-status" id="videos-panel-status" aria-live="polite"></span>
+    </div>
+    <div class="grid">{cards_html}</div>
+    {winner_block}
+    <div class="winner">
+      <h2>Winner (human)</h2>
+      <p>Set <code>WINNER.txt</code> with one line, e.g. <code>vertex_veo</code> — used by final pass.</p>
+    </div>
+  </section>
+
+  <section id="tab-final" class="tab-panel workspace">
+    <h2>Final-pass combine</h2>
+    <p class="thumb-hint">Instructions for the combine agent. Regenerate drafts brief (LLM) and stages <code>final_pass/video.mp4</code> from WINNER.</p>
     <textarea id="final-pass-brief-text" spellcheck="true"
       placeholder="{brief_placeholder}">{brief_area}</textarea>
-    <div class="prompt-actions">
-      <button type="button" id="final-pass-save-btn">Save combine brief</button>
-      <span class="prompt-status" id="final-pass-save-status" aria-live="polite"></span>
+    <div class="panel-actions">
+      <button type="button" class="btn-save" id="final-pass-save-btn">Save</button>
+      <button type="button" class="btn-regenerate" id="final-pass-regenerate-btn">Regenerate final pass</button>
+      <span class="action-status" id="final-pass-save-status" aria-live="polite"></span>
     </div>
+    {final_video_html}
   </section>
-  {winner_block}
-  <div class="winner">
-    <h2>Winner (human)</h2>
-    <p>After review, create <code>WINNER.txt</code> in this folder with one line, e.g. <code>vertex_veo</code> and optional notes.</p>
-  </div>
 </body>
 </html>
 """
@@ -357,7 +480,6 @@ def load_arena_manifest(arena_dir: Path) -> dict | None:
 
 
 def write_review_html(arena_dir: Path, manifest: dict, **kwargs) -> Path:
-    """Write review.html listing provider slots with video tags when present."""
     page = build_review_html(arena_dir, manifest, **kwargs)
     out = arena_dir / "review.html"
     out.write_text(page, encoding="utf-8")

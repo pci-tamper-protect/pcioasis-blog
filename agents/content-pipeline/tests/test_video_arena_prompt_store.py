@@ -47,6 +47,18 @@ def test_save_final_pass_brief(tmp_path):
     assert "Veo motion" in data["final_pass_brief"]
 
 
+def test_review_html_has_three_tabs(tmp_path):
+    arena = tmp_path / "video-arena"
+    arena.mkdir()
+    manifest = {"title": "T", "prompt": "p", "providers": {}}
+    html = build_review_html(arena, manifest, api_base="/arena")
+    assert 'data-tab="prompt"' in html
+    assert 'data-tab="videos"' in html
+    assert 'data-tab="final"' in html
+    assert "regenerate-prompt" in html
+    assert "regenerate-final-pass" in html
+
+
 def test_review_html_has_final_pass_brief_editor(tmp_path):
     arena = tmp_path / "video-arena"
     arena.mkdir()
@@ -67,4 +79,5 @@ def test_review_html_has_editable_prompt(tmp_path):
     assert 'id="shared-prompt-text"' in html
     assert "Edit me" in html
     assert "save-prompt" in html
-    assert "Save prompt" in html
+    assert "Save" in html
+    assert "Regenerate from clapper" in html

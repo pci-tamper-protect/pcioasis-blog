@@ -21,9 +21,10 @@ gcloud auth application-default login
 
 ## Config file
 
+[`deploy/vertex/veo-config.json`](veo-config.json) is committed in-repo (project, region, model — no secrets). Edit `project_id` if you use a different GCP project, or override:
+
 ```bash
-cp deploy/vertex/veo-config.json.example /tmp/veo.json
-# edit project_id and location
+export VERTEX_CONFIG_FILE=/path/to/veo.json
 ```
 
 ## Load env
@@ -33,14 +34,14 @@ Status prints to **stderr**; only `export …` lines go to stdout (for `eval`).
 ```bash
 chmod +x deploy/vertex/export-veo.sh
 eval "$(./deploy/vertex/export-veo.sh)"
-# expect on stderr: ok: Vertex Veo loaded from /tmp/veo.json
+# expect on stderr: ok: Vertex Veo loaded from .../deploy/vertex/veo-config.json
 ```
 
 ## Optional: GCP Secret Manager
 
 ```bash
 gcloud secrets create vertex-veo-config --project=pcioasis-blog --replication-policy=automatic 2>/dev/null || true
-gcloud secrets versions add vertex-veo-config --project=pcioasis-blog --data-file=/tmp/veo.json
+gcloud secrets versions add vertex-veo-config --project=pcioasis-blog --data-file=deploy/vertex/veo-config.json
 export VERTEX_CONFIG_GCP_SECRET=vertex-veo-config
 eval "$(./deploy/vertex/export-veo.sh)"
 ```
@@ -48,5 +49,6 @@ eval "$(./deploy/vertex/export-veo.sh)"
 ## Test
 
 ```bash
+./deploy/vertex/test-veo.sh
 ./deploy/scripts/verify-video-credentials.sh vertex_veo
 ```

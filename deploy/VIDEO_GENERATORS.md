@@ -12,7 +12,7 @@ How to obtain API keys and config files for each **video arena** provider (`gene
 |----------|----------|---------------|---------------------|---------------|
 | Azure Sora 2 | `azure_sora` | [`deploy/az/`](az/README.md) | `/tmp/sora.json` | [`deploy/secrets/export-sora.sh`](secrets/export-sora.sh) |
 | Azure Sora v1 | `azure_sora_v1` | [`deploy/az/`](az/README.md) | same as Sora 2 | same |
-| Vertex Veo 3.1 Fast | `vertex_veo` | [`deploy/vertex/`](vertex/README.md) | `/tmp/veo.json` | [`deploy/vertex/export-veo.sh`](vertex/export-veo.sh) |
+| Vertex Veo 3.1 Fast | `vertex_veo` | [`deploy/vertex/`](vertex/README.md) | [`deploy/vertex/veo-config.json`](vertex/veo-config.json) | [`deploy/vertex/export-veo.sh`](vertex/export-veo.sh) |
 | Bedrock Luma Ray 2 | `bedrock_luma` | [`deploy/aws/`](aws/README.md) | `/tmp/bedrock-luma.json` | [`deploy/aws/export-bedrock-luma.sh`](aws/export-bedrock-luma.sh) |
 | Replicate Hailuo 2.3 | `replicate_hailuo` | [`deploy/replicate/`](replicate/README.md) | `/tmp/replicate.json` | [`deploy/replicate/export-replicate.sh`](replicate/export-replicate.sh) |
 
@@ -140,7 +140,7 @@ gcloud ai models list --region=us-central1 --filter="displayName:veo" 2>/dev/nul
 
 ### Config file
 
-Copy [`deploy/vertex/veo-config.json.example`](vertex/veo-config.json.example) â†’ `/tmp/veo.json`:
+Committed in-repo (no secrets): [`deploy/vertex/veo-config.json`](vertex/veo-config.json):
 
 ```json
 {
@@ -149,6 +149,8 @@ Copy [`deploy/vertex/veo-config.json.example`](vertex/veo-config.json.example) â
   "model": "veo-3.1-fast-generate-001"
 }
 ```
+
+Override path: `export VERTEX_CONFIG_FILE=/path/to/veo.json`
 
 ### Load
 

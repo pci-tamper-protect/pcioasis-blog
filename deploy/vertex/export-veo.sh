@@ -4,7 +4,7 @@
 #
 # Status messages go to stderr; export statements go to stdout (for eval).
 #
-# Reads: VERTEX_CONFIG_FILE (default /tmp/veo.json)
+# Reads: VERTEX_CONFIG_FILE (default deploy/vertex/veo-config.json)
 # Optional fetch: VERTEX_CONFIG_GCP_SECRET + GCP_PROJECT
 
 set -euo pipefail
@@ -12,7 +12,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=../scripts/export-common.sh
 source "$SCRIPT_DIR/../scripts/export-common.sh"
 
-CONFIG_FILE="${VERTEX_CONFIG_FILE:-/tmp/veo.json}"
+CONFIG_FILE="${VERTEX_CONFIG_FILE:-$SCRIPT_DIR/veo-config.json}"
 GCP_PROJECT="${GCP_PROJECT:-pcioasis-blog}"
 GCP_SECRET="${VERTEX_CONFIG_GCP_SECRET:-}"
 SOURCE="$CONFIG_FILE"
@@ -28,7 +28,6 @@ fi
 
 if [[ ! -f "$CONFIG_FILE" ]]; then
   export_report_err "Vertex Veo: missing $CONFIG_FILE"
-  echo "  cp deploy/vertex/veo-config.json.example $CONFIG_FILE" >&2
   echo "  gcloud auth application-default login" >&2
   exit 1
 fi

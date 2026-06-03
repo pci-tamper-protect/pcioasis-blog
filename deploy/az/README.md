@@ -50,3 +50,5 @@ AZ_SORA_MODEL_VERSION=2025-12-08 ./deploy/az/scripts/deploy-sora-2-management-gl
 ## After deploy — video arena creds
 
 Sora secrets are separate from chat (`/tmp/ai`). See `deploy/secrets/export-sora.sh` and `azure-ai-foundry-sora2.json.example`.
+
+**All video providers:** [`deploy/VIDEO_GENERATORS.md`](../VIDEO_GENERATORS.md)

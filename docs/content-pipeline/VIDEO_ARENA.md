@@ -4,6 +4,8 @@ Phase 1 generates **text metadata** (`clapper.txt`, `youtube-shorts.txt`, etc.).
 
 Text-to-video quality is inconsistent; treat this as an **arena**, not a single vendor bet.
 
+**Credential setup (API keys, config files, export scripts):** [`deploy/VIDEO_GENERATORS.md`](../../deploy/VIDEO_GENERATORS.md)
+
 ---
 
 ## Providers (mapped to your credits)

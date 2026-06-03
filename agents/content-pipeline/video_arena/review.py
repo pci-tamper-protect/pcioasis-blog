@@ -227,17 +227,13 @@ def build_review_html(
     body {{ font-family: system-ui, sans-serif; margin: 1rem; background: #111; color: #eee; }}
     h1 {{ font-size: 1.25rem; }}
     a {{ color: #8ab4ff; }}
-    .arena-tabs {{ display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }}
-    .arena-tabs button {{
-      background: #222; color: #ccc; border: 1px solid #444; border-radius: 8px 8px 0 0;
-      padding: 0.5rem 1rem; cursor: pointer; font-size: 0.85rem;
+    .workspace-section {{
+      padding: 1rem; border: 1px solid #333; border-radius: 8px;
+      background: #161616; margin-bottom: 1.5rem;
     }}
-    .arena-tabs button.active {{ background: #2a5db0; color: #fff; border-color: #2a5db0; }}
-    .tab-panel {{ display: none; padding: 1rem; border: 1px solid #333; border-radius: 0 8px 8px 8px;
-      background: #161616; margin-bottom: 1.5rem; }}
-    .tab-panel.active {{ display: block; }}
-    .workspace {{ margin-bottom: 1rem; }}
-    .workspace h2 {{ font-size: 1rem; margin-bottom: 0.35rem; }}
+    .workspace-section h2 {{ font-size: 1rem; margin-bottom: 0.35rem; }}
+    .section-jump {{ display: flex; gap: 0.75rem; flex-wrap: wrap; font-size: 0.85rem; margin: 0.75rem 0 1.25rem; }}
+    .section-jump a {{ color: #8ab4ff; }}
     .grid {{ display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }}
     .card {{ background: #1a1a1a; padding: 1rem; border-radius: 8px; border: 1px solid #333; }}
     .winner {{ margin-top: 1rem; padding: 1rem; background: #0d3320; border-radius: 8px; }}
@@ -271,24 +267,10 @@ def build_review_html(
     .btn-regenerate {{ background: #c45c26; color: #fff; }}
     button:disabled {{ opacity: 0.5; cursor: default; }}
     .action-status {{ font-size: 0.8rem; color: #8ab4ff; min-height: 1.2em; }}
-    #tab-final .workspace {{ background: #1a1a2e; border: 1px solid #3d3d6b; border-radius: 8px;
-      padding: 1rem; }}
+    #section-final {{ background: #141422; border-color: #3d3d6b; }}
   </style>
   <script>
     const ARENA_API = document.body.dataset.apiRoot || '';
-
-    function showTab(name) {{
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.arena-tabs button').forEach(b => b.classList.remove('active'));
-      const panel = document.getElementById('tab-' + name);
-      const tab = document.querySelector('.arena-tabs button[data-tab="' + name + '"]');
-      if (panel) panel.classList.add('active');
-      if (tab) tab.classList.add('active');
-    }}
-
-    document.querySelectorAll('.arena-tabs button').forEach(btn => {{
-      btn.addEventListener('click', () => showTab(btn.dataset.tab));
-    }});
 
     async function arenaPost(path, payload, statusEl, btn, successMsg, validate) {{
       if (validate && !validate()) return;
@@ -421,16 +403,15 @@ def build_review_html(
 <body data-api-root="{api_root}" data-provider-ids="{provider_ids_attr}">
   {back_link}
   <h1>Video arena — {post_title}</h1>
-  <p>Work in three tabs — each can be saved or regenerated independently.</p>
-
-  <nav class="arena-tabs" aria-label="Arena workspaces">
-    <button type="button" class="active" data-tab="prompt">1 · Source text</button>
-    <button type="button" data-tab="videos">2 · Videos &amp; thumbnails</button>
-    <button type="button" data-tab="final">3 · Final pass</button>
+  <p>Three workspaces on one page — each can be saved or regenerated independently.</p>
+  <nav class="section-jump" aria-label="Jump to section">
+    <a href="#section-prompt">1 · Source text</a>
+    <a href="#section-videos">2 · Videos &amp; thumbnails</a>
+    <a href="#section-final">3 · Final pass</a>
   </nav>
 
-  <section id="tab-prompt" class="tab-panel active workspace">
-    <h2>Source text (shared T2V prompt)</h2>
+  <section id="section-prompt" class="workspace-section">
+    <h2>1 · Source text (shared T2V prompt)</h2>
     <p class="thumb-hint">All providers use this prompt. Regenerate rebuilds from <code>clapper.txt</code>.</p>
     <textarea id="shared-prompt-text" spellcheck="true">{prompt_area}</textarea>
     <div class="panel-actions">
@@ -440,9 +421,9 @@ def build_review_html(
     </div>
   </section>
 
-  <section id="tab-videos" class="tab-panel workspace">
-    <h2>Videos &amp; thumbnail feedback</h2>
-    <p class="thumb-hint">Regenerate one provider or all. Saves current source text first if you edited it in tab 1.</p>
+  <section id="section-videos" class="workspace-section">
+    <h2>2 · Videos &amp; thumbnail feedback</h2>
+    <p class="thumb-hint">Regenerate one provider or all. Saves current source text first if you edited it above.</p>
     <div class="panel-actions">
       <button type="button" class="btn-regenerate" id="regenerate-all-videos-btn">Regenerate all videos</button>
       <span class="action-status" id="videos-panel-status" aria-live="polite"></span>
@@ -455,8 +436,8 @@ def build_review_html(
     </div>
   </section>
 
-  <section id="tab-final" class="tab-panel workspace">
-    <h2>Final-pass combine</h2>
+  <section id="section-final" class="workspace-section">
+    <h2>3 · Final-pass combine</h2>
     <p class="thumb-hint">Instructions for the combine agent. Regenerate drafts brief (LLM) and stages <code>final_pass/video.mp4</code> from WINNER.</p>
     <textarea id="final-pass-brief-text" spellcheck="true"
       placeholder="{brief_placeholder}">{brief_area}</textarea>

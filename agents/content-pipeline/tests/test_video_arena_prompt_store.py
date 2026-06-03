@@ -47,14 +47,15 @@ def test_save_final_pass_brief(tmp_path):
     assert "Veo motion" in data["final_pass_brief"]
 
 
-def test_review_html_has_three_tabs(tmp_path):
+def test_review_html_single_page_sections(tmp_path):
     arena = tmp_path / "video-arena"
     arena.mkdir()
     manifest = {"title": "T", "prompt": "p", "providers": {}}
     html = build_review_html(arena, manifest, api_base="/arena")
-    assert 'data-tab="prompt"' in html
-    assert 'data-tab="videos"' in html
-    assert 'data-tab="final"' in html
+    assert 'id="section-prompt"' in html
+    assert 'id="section-videos"' in html
+    assert 'id="section-final"' in html
+    assert "tab-panel" not in html
     assert "regenerate-prompt" in html
     assert "regenerate-final-pass" in html
 

@@ -22,11 +22,22 @@ if [[ ! -f "$SORA_FILE" ]] && command -v gcloud >/dev/null 2>&1; then
 fi
 
 if [[ ! -f "$SORA_FILE" ]]; then
-  echo "error: no Sora secret at $SORA_FILE (create from azure-ai-foundry-sora2.json.example)" >&2
+  echo "error: Sora: no secret at $SORA_FILE (create from azure-ai-foundry-sora2.json.example)" >&2
   echo "  gcloud secrets versions access latest --secret=$GCP_SORA_SECRET --project=$GCP_PROJECT > $SORA_FILE" >&2
   exit 1
 fi
 
-exec uv run --project "$REPO_ROOT/agents/content-pipeline" \
+EXPORTS="$(uv run --project "$REPO_ROOT/agents/content-pipeline" \
   python "$REPO_ROOT/deploy/secrets/load_ai_config.py" \
-  --sora --file "$SORA_FILE" --export-shell
+  --sora --file "$SORA_FILE" --export-shell)" || {
+  echo "error: Sora: failed to load $SORA_FILE (invalid JSON or missing api_key)" >&2
+  exit 1
+}
+
+if [[ -z "$EXPORTS" ]]; then
+  echo "error: Sora: no exports from $SORA_FILE" >&2
+  exit 1
+fi
+
+printf '%s\n' "$EXPORTS"
+echo "ok: Azure Sora loaded from $SORA_FILE" >&2

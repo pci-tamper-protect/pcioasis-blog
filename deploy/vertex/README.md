@@ -28,9 +28,12 @@ cp deploy/vertex/veo-config.json.example /tmp/veo.json
 
 ## Load env
 
+Status prints to **stderr**; only `export …` lines go to stdout (for `eval`).
+
 ```bash
 chmod +x deploy/vertex/export-veo.sh
 eval "$(./deploy/vertex/export-veo.sh)"
+# expect on stderr: ok: Vertex Veo loaded from /tmp/veo.json
 ```
 
 ## Optional: GCP Secret Manager

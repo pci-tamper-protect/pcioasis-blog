@@ -337,7 +337,7 @@ def _json_response(start_response, payload: dict, status: str = "200 OK") -> lis
 
 def wsgi_app(post_dir: Path):
     """Return a minimal WSGI application."""
-    from video_arena.prompt_store import save_arena_prompt
+    from video_arena.prompt_store import save_arena_prompt, save_final_pass_brief
     from video_arena.review import build_review_html, load_arena_manifest
     from video_arena.thumbnails import apply_thumbnail_selection
 
@@ -356,6 +356,34 @@ def wsgi_app(post_dir: Path):
         # Video arena: /arena/save-prompt | /arena/{provider}/...
         if path.startswith("arena/"):
             parts = path.split("/")
+            if (
+                len(parts) == 2
+                and parts[1] == "save-final-pass-brief"
+                and environ.get("REQUEST_METHOD") == "POST"
+            ):
+                try:
+                    length = int(environ.get("CONTENT_LENGTH", "0"))
+                except ValueError:
+                    length = 0
+                raw = environ["wsgi.input"].read(length) if length else b"{}"
+                try:
+                    payload = json.loads(raw.decode("utf-8") or "{}")
+                except json.JSONDecodeError:
+                    return _json_response(
+                        start_response,
+                        {"error": "invalid JSON"},
+                        "400 Bad Request",
+                    )
+                brief = payload.get("brief")
+                if brief is None:
+                    return _json_response(
+                        start_response,
+                        {"error": "missing brief"},
+                        "400 Bad Request",
+                    )
+                save_final_pass_brief(arena_dir, str(brief))
+                return _json_response(start_response, {"ok": True})
+
             if (
                 len(parts) == 2
                 and parts[1] == "save-prompt"

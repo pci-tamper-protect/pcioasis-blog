@@ -69,6 +69,7 @@ Store secrets via existing `deploy/secrets/` patterns; never commit keys.
 content/posts/<section>/<slug>/_variants/video-arena/
   manifest.json           # run id, prompts, per-provider status
   prompt.txt              # shared text prompt sent to all providers
+  final_pass_brief.txt    # human notes: combine best of each clip for final-pass agent
   review.html             # human comparison UI (open locally)
   azure_sora/
     job.json
@@ -128,13 +129,17 @@ content/posts/<section>/<slug>/_variants/video-arena/
    - In **preview_server** (`/arena`), click a tile to save `poster.jpg` + `THUMBNAIL.txt`
    - Static `review.html` on disk: use preview server to persist, or copy manually
 
-5. Score each candidate (1–5): **motion quality**, **prompt adherence**, **artifacts**, **usable for Clapper without re-edit**.
+5. **Final-pass combine brief** (below the provider grid): describe what to take from each clip
+   (timing, motion, lighting, audio) for the downstream **final-pass agent**. Save via preview
+   server → `final_pass_brief.txt`.
 
-6. Write winner to `WINNER.txt` (e.g. `vertex_veo`).
+6. Score each candidate (1–5): **motion quality**, **prompt adherence**, **artifacts**, **usable for Clapper without re-edit**.
 
-7. Copy winner → `_variants/clapper/clip.mp4` and copy `poster.jpg` → `_variants/images/clapper-thumbnail.png` if needed.
+7. Write winner to `WINNER.txt` (e.g. `vertex_veo`).
 
-8. Proceed with publish PR (Phase 4).
+8. Copy winner → `_variants/clapper/clip.mp4` and copy `poster.jpg` → `_variants/images/clapper-thumbnail.png` if needed.
+
+9. Proceed with publish PR (Phase 4).
 
 **Optional:** Re-run a single provider after tweaking `prompt.txt`:
 

@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 from typing import Callable
 
-from video_arena.prompt_store import load_prompt_text
+from video_arena.prompt_store import load_final_pass_brief, load_prompt_text
 from video_arena.thumbnails import load_thumbnails
 
 
@@ -162,7 +162,13 @@ def build_review_html(
     post_title = html.escape(manifest.get("title", "Video arena"))
     prompt_raw = load_prompt_text(arena_dir, manifest)
     prompt_area = html.escape(prompt_raw)
+    brief_raw = load_final_pass_brief(arena_dir, manifest)
+    brief_area = html.escape(brief_raw)
     api_root = html.escape(api_base) if api_base else ""
+    brief_placeholder = html.escape(
+        "e.g. Open on vertex_veo (0–2s) for stable framing; use azure_sora lighting "
+        "for the laptop beat; avoid Veo black lead-in; keep motion slow; no on-screen text."
+    )
     body = "\n".join(rows)
     back_link = ""
     if back_href:
@@ -220,41 +226,59 @@ def build_review_html(
     .prompt-actions button:disabled {{ opacity: 0.5; cursor: default; }}
     .prompt-status {{ font-size: 0.8rem; color: #8ab4ff; min-height: 1.2em; }}
     .prompt-hint {{ font-size: 0.8rem; color: #aaa; margin-top: 0.35rem; }}
+    .final-pass-editor {{ margin: 1.5rem 0; padding: 1rem; background: #1a1a2e;
+      border: 1px solid #3d3d6b; border-radius: 8px; }}
+    .final-pass-editor h2 {{ font-size: 1rem; color: #c5cae9; }}
   </style>
   <script>
+    async function arenaPost(apiRoot, path, payload, statusEl, btn, successMsg, validate) {{
+      if (validate && !validate()) return;
+      if (!apiRoot) {{
+        statusEl.textContent = 'Use preview_server.py (/arena) to save to disk';
+        return;
+      }}
+      btn.disabled = true;
+      statusEl.textContent = 'Saving…';
+      try {{
+        const res = await fetch(apiRoot + path, {{
+          method: 'POST',
+          headers: {{ 'Content-Type': 'application/json' }},
+          body: JSON.stringify(payload),
+        }});
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || res.statusText);
+        statusEl.textContent = successMsg;
+      }} catch (e) {{
+        statusEl.textContent = 'Error: ' + e.message;
+      }} finally {{
+        btn.disabled = false;
+      }}
+    }}
+
     (function() {{
       const apiRoot = document.getElementById('shared-prompt-editor')?.dataset.apiRoot || '';
       const ta = document.getElementById('shared-prompt-text');
       const status = document.getElementById('prompt-save-status');
       const btn = document.getElementById('prompt-save-btn');
-      if (!ta || !btn) return;
-      btn.addEventListener('click', async () => {{
-        const prompt = ta.value.trim();
-        if (!prompt) {{
-          status.textContent = 'Prompt cannot be empty';
-          return;
-        }}
-        if (!apiRoot) {{
-          status.textContent = 'Saved locally only — use preview_server.py to write prompt.txt';
-          return;
-        }}
-        btn.disabled = true;
-        status.textContent = 'Saving…';
-        try {{
-          const res = await fetch(apiRoot + '/save-prompt', {{
-            method: 'POST',
-            headers: {{ 'Content-Type': 'application/json' }},
-            body: JSON.stringify({{ prompt }}),
-          }});
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || res.statusText);
-          status.textContent = 'Saved prompt.txt — re-run providers with --only';
-        }} catch (e) {{
-          status.textContent = 'Error: ' + e.message;
-        }} finally {{
-          btn.disabled = false;
-        }}
-      }});
+      if (ta && btn && status) {{
+        btn.addEventListener('click', () => arenaPost(
+          apiRoot, '/save-prompt', {{ prompt: ta.value.trim() }}, status, btn,
+          'Saved prompt.txt — re-run providers with --only',
+          () => {{
+            if (!ta.value.trim()) {{ status.textContent = 'Prompt cannot be empty'; return false; }}
+            return true;
+          }}
+        ));
+      }}
+      const briefTa = document.getElementById('final-pass-brief-text');
+      const briefStatus = document.getElementById('final-pass-save-status');
+      const briefBtn = document.getElementById('final-pass-save-btn');
+      if (briefTa && briefBtn && briefStatus) {{
+        briefBtn.addEventListener('click', () => arenaPost(
+          apiRoot, '/save-final-pass-brief', {{ brief: briefTa.value }}, briefStatus, briefBtn,
+          'Saved final_pass_brief.txt for final-pass agent'
+        ));
+      }}
     }})();
 
     document.querySelectorAll('.thumb-picker').forEach(picker => {{
@@ -303,6 +327,18 @@ def build_review_html(
     </div>
   </section>
   <div class="grid">{body}</div>
+  <section class="final-pass-editor prompt-editor" id="final-pass-editor" data-api-root="{api_root}">
+    <h2>Final-pass combine brief</h2>
+    <p class="prompt-hint">After comparing clips above: what to take from each provider for the
+      <strong>final-pass agent</strong> (stitch, re-cut, or re-prompt). Saved as
+      <code>final_pass_brief.txt</code>.</p>
+    <textarea id="final-pass-brief-text" spellcheck="true"
+      placeholder="{brief_placeholder}">{brief_area}</textarea>
+    <div class="prompt-actions">
+      <button type="button" id="final-pass-save-btn">Save combine brief</button>
+      <span class="prompt-status" id="final-pass-save-status" aria-live="polite"></span>
+    </div>
+  </section>
   {winner_block}
   <div class="winner">
     <h2>Winner (human)</h2>

@@ -2,6 +2,8 @@
 
 Bootstrap scripts move Azure AI Foundry credentials from a **local file** into macOS Keychain and GCP Secret Manager (`pcioasis-blog`). A small Python loader normalizes the same JSON for **Azure OpenAI**, plain **OpenAI**, and **Anthropic** callers.
 
+Azure CLI deploy helpers (Sora 2, list deployments): `deploy/az/scripts/` — see `deploy/az/README.md`.
+
 ## Secret file format
 
 Default path: `/tmp/ai` (override with `AI_SECRET_FILE`).
@@ -60,6 +62,19 @@ chmod +x deploy/secrets/bootstrap-gcp-secrets.sh
 
 # Project: pcioasis-blog, secret id: azure-ai-foundry
 ./deploy/secrets/bootstrap-gcp-secrets.sh
+```
+
+**Sora (video arena, separate subscription/resource):**
+
+```bash
+chmod +x deploy/secrets/bootstrap-gcp-sora-secrets.sh deploy/secrets/export-sora.sh
+
+# /tmp/sora.json — see azure-ai-foundry-sora2.json.example
+./deploy/secrets/bootstrap-gcp-sora-secrets.sh
+# or manually:
+# gcloud secrets versions add azure_ai_foundry_sora2 --project=pcioasis-blog --data-file=/tmp/sora.json
+
+eval "$(./deploy/secrets/export-sora.sh)"   # sets AZURE_SORA_* only (not chat LLM env)
 ```
 
 Requires `gcloud` with permission to create/update secrets. Payload is the **same JSON** as `/tmp/ai`.

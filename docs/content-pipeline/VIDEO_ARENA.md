@@ -51,8 +51,8 @@ Each provider adapter adds vendor-specific parameters (resolution, duration, ref
 
 | Provider | Env vars |
 |----------|----------|
-| Azure Sora 2 | `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_KEY`, `AZURE_SORA_MODEL=sora-2` (or `AZURE_OPENAI_DEPLOYMENT`) |
-| Azure Sora v1 | Same endpoint/key as above + `AZURE_SORA_V1_DEPLOYMENT=sora` (separate deployment name in portal) |
+| Azure Sora 2 | `eval "$(./deploy/secrets/export-sora.sh)"` → `AZURE_SORA_ENDPOINT`, `AZURE_SORA_API_KEY`, `AZURE_SORA_DEPLOYMENT=sora-2` |
+| Azure Sora v1 | Same as Sora 2 endpoint/key + `AZURE_SORA_V1_DEPLOYMENT=sora` (if deployed on that resource) |
 | Vertex Veo | `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION=us-central1`, ADC (`gcloud auth application-default login`) |
 | Bedrock Luma | `AWS_REGION=us-west-2`, AWS creds with `bedrock:InvokeModel` + S3 write |
 | Replicate | `REPLICATE_API_TOKEN` |

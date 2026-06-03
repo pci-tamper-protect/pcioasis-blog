@@ -36,8 +36,8 @@ class AzureSoraProvider(ArenaProvider):
         reference_image: Path | None = None,
     ) -> ProviderResult:
         model = os.environ.get("AZURE_SORA_MODEL") or os.environ.get(
-            "AZURE_OPENAI_DEPLOYMENT", DEFAULT_MODEL
-        )
+            "AZURE_SORA_DEPLOYMENT", DEFAULT_MODEL
+        ) or os.environ.get("AZURE_OPENAI_DEPLOYMENT", DEFAULT_MODEL)
         return run_azure_sora_job(
             provider_id=self.provider_id,
             model=model,

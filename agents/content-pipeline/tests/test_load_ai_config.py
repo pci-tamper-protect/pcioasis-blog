@@ -10,7 +10,9 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from deploy.secrets.load_ai_config import (  # noqa: E402
     _parse_secret_payload,
+    foundry_services_url_to_openai_v1,
     normalize_azure_endpoint,
+    normalize_sora_secret_fields,
 )
 
 
@@ -33,3 +35,22 @@ class TestNormalizeAzureEndpoint:
         url, v1 = normalize_azure_endpoint("https://r.openai.azure.com/openai/v1")
         assert v1 is True
         assert url.endswith("/openai/v1/")
+
+
+class TestSoraSecretNormalization:
+    def test_target_url_to_openai_v1(self):
+        url = foundry_services_url_to_openai_v1(
+            "https://management-ptp-global-resource.services.ai.azure.com"
+        )
+        assert url == "https://management-ptp-global-resource.openai.azure.com/openai/v1"
+
+    def test_portal_style_json(self):
+        raw = """{
+          "target_url": "https://mgmt.services.ai.azure.com",
+          "api_key": "azure-key",
+          "model_name": "sora-2",
+          "subscription": "management-ptp-global"
+        }"""
+        cfg = _parse_secret_payload(raw)
+        assert cfg.azure_openai_endpoint.endswith("/openai/v1")
+        assert cfg.api_key_name == "management-ptp-global"

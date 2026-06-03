@@ -7,9 +7,78 @@ import json
 from pathlib import Path
 from typing import Callable
 
+from video_arena.thumbnails import load_thumbnails
+
 
 def _video_src(provider_id: str, href_for: Callable[[str], str]) -> str:
     return href_for(provider_id)
+
+
+def _thumbnail_src(
+    provider_id: str,
+    rel_file: str,
+    *,
+    thumb_href_for: Callable[[str, str], str] | None,
+) -> str:
+    if thumb_href_for is not None:
+        return thumb_href_for(provider_id, rel_file)
+    return f"{provider_id}/{rel_file}"
+
+
+def _build_thumbnail_picker(
+    pid: str,
+    sub: Path,
+    *,
+    thumb_href_for: Callable[[str, str], str] | None,
+    api_base: str | None,
+) -> str:
+    data = load_thumbnails(sub)
+    if not data or not data.get("candidates"):
+        err = data.get("error") if data else None
+        if err:
+            return f'<p class="thumb-hint"><em>Thumbnails: {html.escape(err)}</em></p>'
+        return ""
+
+    selected = data.get("selected") or ""
+    poster = sub / "poster.jpg"
+    poster_note = ""
+    if poster.is_file():
+        src = _thumbnail_src(pid, "poster.jpg", thumb_href_for=thumb_href_for)
+        poster_note = (
+            f'<p class="thumb-selected">Saved poster: '
+            f'<img src="{html.escape(src)}" alt="poster" class="thumb-poster-preview">'
+            f" ({html.escape(selected or 'poster.jpg')})</p>"
+        )
+
+    tiles = []
+    for cand in data["candidates"]:
+        cid = cand["id"]
+        rel = cand["file"]
+        src = _thumbnail_src(pid, rel, thumb_href_for=thumb_href_for)
+        label = html.escape(cand.get("label", cid))
+        detail = html.escape(cand.get("detail", ""))
+        active = " active" if cid == selected else ""
+        tiles.append(
+            f"""
+            <button type="button" class="thumb-opt{active}" data-choice="{html.escape(cid)}"
+                    title="{detail}">
+              <img src="{html.escape(src)}" alt="{label}">
+              <span>{label}</span>
+              <small>{detail}</small>
+            </button>
+            """
+        )
+
+    api_attr = html.escape(api_base) if api_base else ""
+    return f"""
+    <div class="thumb-picker" data-provider="{html.escape(pid)}" data-api-base="{api_attr}">
+      <h3>Thumbnail (splash / cover)</h3>
+      <p class="thumb-hint">Pick one frame — first non-black, highest contrast, or scene cuts.</p>
+      <div class="thumb-grid">{"".join(tiles)}</div>
+      {poster_note}
+      <p class="thumb-status" aria-live="polite"></p>
+    </div>
+    """
 
 
 def build_review_html(
@@ -17,7 +86,9 @@ def build_review_html(
     manifest: dict,
     *,
     href_for: Callable[[str], str] | None = None,
+    thumb_href_for: Callable[[str, str], str] | None = None,
     back_href: str | None = None,
+    api_base: str | None = None,
 ) -> str:
     """Return HTML for the arena comparison page.
 
@@ -37,8 +108,14 @@ def build_review_html(
         video_tag = ""
         if video.is_file():
             src = html.escape(_video_src(pid, href_for))
+            poster_attr = ""
+            if (sub / "poster.jpg").is_file():
+                poster_src = _thumbnail_src(
+                    pid, "poster.jpg", thumb_href_for=thumb_href_for
+                )
+                poster_attr = f' poster="{html.escape(poster_src)}"'
             video_tag = (
-                f'<video controls playsinline src="{src}" '
+                f'<video controls playsinline src="{src}"{poster_attr} '
                 f'style="width:100%;max-height:420px;background:#000"></video>'
             )
         elif (sub / "SKIPPED.md").is_file():
@@ -57,12 +134,23 @@ def build_review_html(
                 f"{html.escape(critique.read_text())}</pre></details>"
             )
 
+        thumb_html = ""
+        if video.is_file():
+            provider_api = f"{api_base}/{pid}" if api_base else ""
+            thumb_html = _build_thumbnail_picker(
+                pid,
+                sub,
+                thumb_href_for=thumb_href_for,
+                api_base=provider_api or None,
+            )
+
         rows.append(
             f"""
             <section class="card">
               <h2>{html.escape(data.get('display_name', pid))}</h2>
               <p><strong>Status:</strong> {html.escape(status)} — {html.escape(data.get('message', ''))}</p>
               {video_tag}
+              {thumb_html}
               {critique_html}
               <label>Human score (1-5 motion): <input type="number" min="1" max="5" name="{pid}_motion"></label>
               <label>Notes: <textarea name="{pid}_notes" rows="2" style="width:100%"></textarea></label>
@@ -101,7 +189,52 @@ def build_review_html(
     .card {{ background: #1a1a1a; padding: 1rem; border-radius: 8px; border: 1px solid #333; }}
     .prompt {{ background: #222; padding: 1rem; border-radius: 8px; white-space: pre-wrap; font-size: 0.85rem; }}
     .winner {{ margin-top: 2rem; padding: 1rem; background: #0d3320; border-radius: 8px; }}
+    .thumb-picker {{ margin-top: 1rem; }}
+    .thumb-picker h3 {{ font-size: 0.95rem; margin-bottom: 0.35rem; }}
+    .thumb-hint {{ font-size: 0.8rem; color: #aaa; margin-bottom: 0.5rem; }}
+    .thumb-grid {{ display: flex; flex-wrap: wrap; gap: 0.5rem; }}
+    .thumb-opt {{
+      background: #222; border: 2px solid #444; border-radius: 6px; padding: 4px;
+      cursor: pointer; max-width: 120px; text-align: center; color: #eee;
+    }}
+    .thumb-opt.active {{ border-color: #4caf50; box-shadow: 0 0 0 1px #4caf50; }}
+    .thumb-opt img {{ display: block; width: 100%; height: auto; border-radius: 4px; }}
+    .thumb-opt span {{ display: block; font-size: 0.7rem; margin-top: 4px; }}
+    .thumb-opt small {{ display: block; font-size: 0.65rem; color: #888; }}
+    .thumb-poster-preview {{ max-height: 80px; vertical-align: middle; margin-left: 8px; }}
+    .thumb-status {{ font-size: 0.8rem; color: #8ab4ff; margin-top: 0.5rem; min-height: 1.2em; }}
   </style>
+  <script>
+    document.querySelectorAll('.thumb-picker').forEach(picker => {{
+      const apiBase = picker.dataset.apiBase;
+      const status = picker.querySelector('.thumb-status');
+      picker.querySelectorAll('.thumb-opt').forEach(btn => {{
+        btn.addEventListener('click', async () => {{
+          const choice = btn.dataset.choice;
+          picker.querySelectorAll('.thumb-opt').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          if (!apiBase) {{
+            status.textContent = 'Selected ' + choice + ' — open via preview_server.py to save poster.jpg';
+            return;
+          }}
+          status.textContent = 'Saving…';
+          try {{
+            const res = await fetch(apiBase + '/select-thumbnail', {{
+              method: 'POST',
+              headers: {{ 'Content-Type': 'application/json' }},
+              body: JSON.stringify({{ choice }}),
+            }});
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || res.statusText);
+            status.textContent = 'Saved poster.jpg (' + choice + ')';
+          }} catch (e) {{
+            status.textContent = 'Error: ' + e.message;
+            btn.classList.remove('active');
+          }}
+        }});
+      }});
+    }});
+  </script>
 </head>
 <body>
   {back_link}
@@ -127,9 +260,9 @@ def load_arena_manifest(arena_dir: Path) -> dict | None:
     return json.loads(manifest_path.read_text(encoding="utf-8"))
 
 
-def write_review_html(arena_dir: Path, manifest: dict) -> Path:
+def write_review_html(arena_dir: Path, manifest: dict, **kwargs) -> Path:
     """Write review.html listing provider slots with video tags when present."""
-    page = build_review_html(arena_dir, manifest)
+    page = build_review_html(arena_dir, manifest, **kwargs)
     out = arena_dir / "review.html"
     out.write_text(page, encoding="utf-8")
     return out

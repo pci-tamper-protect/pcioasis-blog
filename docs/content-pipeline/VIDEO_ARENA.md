@@ -77,6 +77,13 @@ content/posts/<section>/<slug>/_variants/video-arena/
   azure_sora_v1/
     ...
   vertex_veo/
+    thumbnails/
+      first_non_black.jpg   # first frame with luma above black threshold
+      max_contrast.jpg      # ffmpeg thumbnail filter (sharpest/contrasty)
+      scene_01.jpg …        # up to 4 scene-cut frames
+    thumbnails.json       # candidate list + selected id
+    poster.jpg              # copy of chosen thumbnail (after you pick)
+    THUMBNAIL.txt           # selected candidate id
     ...
   bedrock_luma/
     ...
@@ -105,11 +112,20 @@ content/posts/<section>/<slug>/_variants/video-arena/
    # http://<LAN-IP>:5050/arena  — same page, streams MP4s for phone review
    ```
 
-3. Score each candidate (1–5): **motion quality**, **prompt adherence**, **artifacts**, **usable for Clapper without re-edit**.
+3. **Pick a splash thumbnail** per provider (avoids blank Veo lead-in frames):
+   - **First non-black** — skips black/fade-in at t=0
+   - **Highest contrast** — ffmpeg `thumbnail` filter across the clip
+   - **Scene change** — up to 4 frames where `scene` score exceeds threshold
+   - In **preview_server** (`/arena`), click a tile to save `poster.jpg` + `THUMBNAIL.txt`
+   - Static `review.html` on disk: use preview server to persist, or copy manually
 
-4. Write winner to `WINNER.txt` (e.g. `vertex_veo`).
+4. Score each candidate (1–5): **motion quality**, **prompt adherence**, **artifacts**, **usable for Clapper without re-edit**.
 
-5. Copy winner → `_variants/clapper/clip.mp4` and proceed with publish PR (Phase 4).
+5. Write winner to `WINNER.txt` (e.g. `vertex_veo`).
+
+6. Copy winner → `_variants/clapper/clip.mp4` and copy `poster.jpg` → `_variants/images/clapper-thumbnail.png` if needed.
+
+7. Proceed with publish PR (Phase 4).
 
 **Optional:** Re-run a single provider after tweaking `prompt.txt`:
 

@@ -307,21 +307,38 @@ def render_index(manifest: dict, variants: dict[str, str], *, has_arena: bool = 
     return render_page(post_title, info + grid, active="")
 
 
-def _serve_mp4(path: Path, start_response) -> list[bytes]:
+def _serve_file(path: Path, content_type: str, start_response) -> list[bytes]:
     data = path.read_bytes()
     start_response(
         "200 OK",
         [
-            ("Content-Type", "video/mp4"),
+            ("Content-Type", content_type),
             ("Content-Length", str(len(data))),
         ],
     )
     return [data]
 
 
+def _serve_mp4(path: Path, start_response) -> list[bytes]:
+    return _serve_file(path, "video/mp4", start_response)
+
+
+def _json_response(start_response, payload: dict, status: str = "200 OK") -> list[bytes]:
+    body = json.dumps(payload).encode("utf-8")
+    start_response(
+        status,
+        [
+            ("Content-Type", "application/json"),
+            ("Content-Length", str(len(body))),
+        ],
+    )
+    return [body]
+
+
 def wsgi_app(post_dir: Path):
     """Return a minimal WSGI application."""
     from video_arena.review import build_review_html, load_arena_manifest
+    from video_arena.thumbnails import apply_thumbnail_selection
 
     post_dir = post_dir.resolve()
     variants_dir = post_dir / "_variants"
@@ -335,26 +352,69 @@ def wsgi_app(post_dir: Path):
         arena_manifest = load_arena_manifest(arena_dir)
         has_arena = arena_manifest is not None
 
-        # Video arena: /arena/{provider}/video.mp4
-        if path.startswith("arena/") and path.endswith("/video.mp4"):
-            provider_id = path[len("arena/") : -len("/video.mp4")]
-            video_path = arena_dir / provider_id / "video.mp4"
-            if video_path.is_file():
-                return _serve_mp4(video_path, start_response)
-            body = render_page(
-                post_title,
-                "<p>Video not found for this provider.</p>",
-                arena_link=has_arena,
-            )
-            encoded = body.encode("utf-8")
-            start_response(
-                "404 Not Found",
-                [
-                    ("Content-Type", "text/html; charset=utf-8"),
-                    ("Content-Length", str(len(encoded))),
-                ],
-            )
-            return [encoded]
+        # Video arena assets: /arena/{provider}/video.mp4 | thumbnails/*.jpg | poster.jpg
+        if path.startswith("arena/"):
+            parts = path.split("/")
+            if len(parts) >= 3:
+                provider_id = parts[1]
+                asset = "/".join(parts[2:])
+                base = arena_dir / provider_id
+                if asset == "video.mp4":
+                    video_path = base / "video.mp4"
+                    if video_path.is_file():
+                        return _serve_mp4(video_path, start_response)
+                if asset == "poster.jpg":
+                    poster = base / "poster.jpg"
+                    if poster.is_file():
+                        return _serve_file(poster, "image/jpeg", start_response)
+                if asset.startswith("thumbnails/"):
+                    thumb_path = base / asset
+                    if thumb_path.is_file() and thumb_path.suffix.lower() in {
+                        ".jpg",
+                        ".jpeg",
+                        ".png",
+                    }:
+                        return _serve_file(thumb_path, "image/jpeg", start_response)
+
+            if (
+                len(parts) == 3
+                and parts[2] == "select-thumbnail"
+                and environ.get("REQUEST_METHOD") == "POST"
+            ):
+                provider_id = parts[1]
+                provider_dir = arena_dir / provider_id
+                try:
+                    length = int(environ.get("CONTENT_LENGTH", "0"))
+                except ValueError:
+                    length = 0
+                raw = environ["wsgi.input"].read(length) if length else b"{}"
+                try:
+                    payload = json.loads(raw.decode("utf-8") or "{}")
+                except json.JSONDecodeError:
+                    return _json_response(
+                        start_response,
+                        {"error": "invalid JSON"},
+                        "400 Bad Request",
+                    )
+                choice = payload.get("choice")
+                if not choice:
+                    return _json_response(
+                        start_response,
+                        {"error": "missing choice"},
+                        "400 Bad Request",
+                    )
+                try:
+                    poster = apply_thumbnail_selection(provider_dir, str(choice))
+                except (FileNotFoundError, ValueError) as exc:
+                    return _json_response(
+                        start_response,
+                        {"error": str(exc)},
+                        "400 Bad Request",
+                    )
+                return _json_response(
+                    start_response,
+                    {"ok": True, "choice": choice, "poster": str(poster)},
+                )
 
         if path == "arena":
             if not arena_manifest:
@@ -370,7 +430,9 @@ def wsgi_app(post_dir: Path):
                     arena_dir,
                     arena_manifest,
                     href_for=lambda pid: f"/arena/{pid}/video.mp4",
+                    thumb_href_for=lambda pid, rel: f"/arena/{pid}/{rel}",
                     back_href="/",
+                    api_base="/arena",
                 )
                 status = "200 OK"
             encoded = body.encode("utf-8")

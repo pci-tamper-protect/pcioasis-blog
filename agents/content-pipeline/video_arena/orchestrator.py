@@ -11,6 +11,7 @@ from video_arena.critique import write_critique
 from video_arena.prompt_builder import build_video_prompt
 from video_arena.providers import all_providers
 from video_arena.review import write_review_html
+from video_arena.thumbnails import extract_thumbnail_candidates
 
 
 def _parse_frontmatter_title(index_md: Path) -> str:
@@ -58,6 +59,19 @@ def run_arena(
         print(f"  [{provider.provider_id}] starting...", flush=True)
         out_sub = arena_dir / provider.provider_id
         result = provider.run(prompt, out_sub, reference_image=ref_image)
+        print(f"    -> {result.status}: {result.message}", flush=True)
+
+        thumb_meta: dict[str, Any] = {}
+        if result.status == "ok" and result.video_path:
+            video_file = Path(result.video_path)
+            if video_file.is_file():
+                thumb_meta = extract_thumbnail_candidates(video_file, out_sub)
+                n = len(thumb_meta.get("candidates", []))
+                if n:
+                    print(f"    -> thumbnails: {n} candidates", flush=True)
+                elif thumb_meta.get("error"):
+                    print(f"    -> thumbnails: skipped ({thumb_meta['error']})", flush=True)
+
         results[provider.provider_id] = {
             "display_name": provider.display_name,
             "status": result.status,
@@ -65,8 +79,9 @@ def run_arena(
             "model": result.model,
             "video_path": result.video_path,
             "elapsed_seconds": result.elapsed_seconds,
+            "thumbnails": thumb_meta.get("candidates", []),
+            "thumbnail_selected": thumb_meta.get("selected"),
         }
-        print(f"    -> {result.status}: {result.message}", flush=True)
 
         if not skip_critique and result.status in ("ok", "failed", "skipped"):
             job_path = out_sub / "job.json"

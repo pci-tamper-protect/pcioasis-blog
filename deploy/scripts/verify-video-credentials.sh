@@ -76,4 +76,4 @@ else
 fi
 
 echo ""
-echo "Hub: deploy/VIDEO_GENERATORS.md"
+echo "Hub: deploy/VIDEO_GENERATORS.md (video arena + Open Notebook + OmniVoice)"

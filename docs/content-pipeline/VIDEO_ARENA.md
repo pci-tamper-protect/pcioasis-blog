@@ -112,20 +112,29 @@ content/posts/<section>/<slug>/_variants/video-arena/
    # http://<LAN-IP>:5050/arena  — same page, streams MP4s for phone review
    ```
 
-3. **Pick a splash thumbnail** per provider (avoids blank Veo lead-in frames):
+3. **Edit the shared prompt** in the review page textarea (same text for all providers). Save via preview server (`/arena` → **Save prompt**), then re-run one provider:
+
+   ```bash
+   uv run --project agents/content-pipeline \
+     python agents/content-pipeline/generate_video_arena.py POST_DIR --only vertex_veo
+   ```
+
+   Saved prompt lives in `_variants/video-arena/prompt.txt` (not rebuilt from `clapper.txt` while that file exists).
+
+4. **Pick a splash thumbnail** per provider (avoids blank Veo lead-in frames):
    - **First non-black** — skips black/fade-in at t=0
    - **Highest contrast** — ffmpeg `thumbnail` filter across the clip
    - **Scene change** — up to 4 frames where `scene` score exceeds threshold
    - In **preview_server** (`/arena`), click a tile to save `poster.jpg` + `THUMBNAIL.txt`
    - Static `review.html` on disk: use preview server to persist, or copy manually
 
-4. Score each candidate (1–5): **motion quality**, **prompt adherence**, **artifacts**, **usable for Clapper without re-edit**.
+5. Score each candidate (1–5): **motion quality**, **prompt adherence**, **artifacts**, **usable for Clapper without re-edit**.
 
-5. Write winner to `WINNER.txt` (e.g. `vertex_veo`).
+6. Write winner to `WINNER.txt` (e.g. `vertex_veo`).
 
-6. Copy winner → `_variants/clapper/clip.mp4` and copy `poster.jpg` → `_variants/images/clapper-thumbnail.png` if needed.
+7. Copy winner → `_variants/clapper/clip.mp4` and copy `poster.jpg` → `_variants/images/clapper-thumbnail.png` if needed.
 
-7. Proceed with publish PR (Phase 4).
+8. Proceed with publish PR (Phase 4).
 
 **Optional:** Re-run a single provider after tweaking `prompt.txt`:
 

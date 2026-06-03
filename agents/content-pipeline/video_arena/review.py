@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 from typing import Callable
 
+from video_arena.prompt_store import load_prompt_text
 from video_arena.thumbnails import load_thumbnails
 
 
@@ -159,7 +160,9 @@ def build_review_html(
         )
 
     post_title = html.escape(manifest.get("title", "Video arena"))
-    prompt_pre = html.escape(manifest.get("prompt", ""))
+    prompt_raw = load_prompt_text(arena_dir, manifest)
+    prompt_area = html.escape(prompt_raw)
+    api_root = html.escape(api_base) if api_base else ""
     body = "\n".join(rows)
     back_link = ""
     if back_href:
@@ -203,8 +206,57 @@ def build_review_html(
     .thumb-opt small {{ display: block; font-size: 0.65rem; color: #888; }}
     .thumb-poster-preview {{ max-height: 80px; vertical-align: middle; margin-left: 8px; }}
     .thumb-status {{ font-size: 0.8rem; color: #8ab4ff; margin-top: 0.5rem; min-height: 1.2em; }}
+    .prompt-editor {{ margin-bottom: 1.5rem; }}
+    .prompt-editor textarea {{
+      width: 100%; min-height: 11rem; font-family: ui-monospace, monospace;
+      font-size: 0.85rem; line-height: 1.45; background: #222; color: #eee;
+      border: 1px solid #444; border-radius: 8px; padding: 0.75rem; resize: vertical;
+    }}
+    .prompt-actions {{ margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }}
+    .prompt-actions button {{
+      background: #2a5db0; color: #fff; border: none; border-radius: 6px;
+      padding: 0.45rem 0.9rem; cursor: pointer; font-size: 0.85rem;
+    }}
+    .prompt-actions button:disabled {{ opacity: 0.5; cursor: default; }}
+    .prompt-status {{ font-size: 0.8rem; color: #8ab4ff; min-height: 1.2em; }}
+    .prompt-hint {{ font-size: 0.8rem; color: #aaa; margin-top: 0.35rem; }}
   </style>
   <script>
+    (function() {{
+      const apiRoot = document.getElementById('shared-prompt-editor')?.dataset.apiRoot || '';
+      const ta = document.getElementById('shared-prompt-text');
+      const status = document.getElementById('prompt-save-status');
+      const btn = document.getElementById('prompt-save-btn');
+      if (!ta || !btn) return;
+      btn.addEventListener('click', async () => {{
+        const prompt = ta.value.trim();
+        if (!prompt) {{
+          status.textContent = 'Prompt cannot be empty';
+          return;
+        }}
+        if (!apiRoot) {{
+          status.textContent = 'Saved locally only — use preview_server.py to write prompt.txt';
+          return;
+        }}
+        btn.disabled = true;
+        status.textContent = 'Saving…';
+        try {{
+          const res = await fetch(apiRoot + '/save-prompt', {{
+            method: 'POST',
+            headers: {{ 'Content-Type': 'application/json' }},
+            body: JSON.stringify({{ prompt }}),
+          }});
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || res.statusText);
+          status.textContent = 'Saved prompt.txt — re-run providers with --only';
+        }} catch (e) {{
+          status.textContent = 'Error: ' + e.message;
+        }} finally {{
+          btn.disabled = false;
+        }}
+      }});
+    }})();
+
     document.querySelectorAll('.thumb-picker').forEach(picker => {{
       const apiBase = picker.dataset.apiBase;
       const status = picker.querySelector('.thumb-status');
@@ -239,9 +291,17 @@ def build_review_html(
 <body>
   {back_link}
   <h1>Video arena — {post_title}</h1>
-  <p>Compare providers side-by-side. Pick one clip for <code>_variants/clapper/clip.mp4</code>, then record in <code>WINNER.txt</code>.</p>
-  <h2>Shared prompt</h2>
-  <div class="prompt">{prompt_pre}</div>
+  <p>Compare providers side-by-side. Edit the <strong>shared prompt</strong> once, then re-run individual providers for new video only.</p>
+  <section class="prompt-editor" id="shared-prompt-editor" data-api-root="{api_root}">
+    <h2>Shared prompt (all providers)</h2>
+    <p class="prompt-hint">Sent to every T2V API. Save here, then:
+      <code>generate_video_arena.py POST_DIR --only azure_sora</code> (or vertex_veo, etc.).</p>
+    <textarea id="shared-prompt-text" spellcheck="true">{prompt_area}</textarea>
+    <div class="prompt-actions">
+      <button type="button" id="prompt-save-btn">Save prompt</button>
+      <span class="prompt-status" id="prompt-save-status" aria-live="polite"></span>
+    </div>
+  </section>
   <div class="grid">{body}</div>
   {winner_block}
   <div class="winner">

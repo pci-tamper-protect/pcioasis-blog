@@ -337,6 +337,7 @@ def _json_response(start_response, payload: dict, status: str = "200 OK") -> lis
 
 def wsgi_app(post_dir: Path):
     """Return a minimal WSGI application."""
+    from video_arena.prompt_store import save_arena_prompt
     from video_arena.review import build_review_html, load_arena_manifest
     from video_arena.thumbnails import apply_thumbnail_selection
 
@@ -352,9 +353,44 @@ def wsgi_app(post_dir: Path):
         arena_manifest = load_arena_manifest(arena_dir)
         has_arena = arena_manifest is not None
 
-        # Video arena assets: /arena/{provider}/video.mp4 | thumbnails/*.jpg | poster.jpg
+        # Video arena: /arena/save-prompt | /arena/{provider}/...
         if path.startswith("arena/"):
             parts = path.split("/")
+            if (
+                len(parts) == 2
+                and parts[1] == "save-prompt"
+                and environ.get("REQUEST_METHOD") == "POST"
+            ):
+                try:
+                    length = int(environ.get("CONTENT_LENGTH", "0"))
+                except ValueError:
+                    length = 0
+                raw = environ["wsgi.input"].read(length) if length else b"{}"
+                try:
+                    payload = json.loads(raw.decode("utf-8") or "{}")
+                except json.JSONDecodeError:
+                    return _json_response(
+                        start_response,
+                        {"error": "invalid JSON"},
+                        "400 Bad Request",
+                    )
+                prompt = payload.get("prompt")
+                if not prompt or not str(prompt).strip():
+                    return _json_response(
+                        start_response,
+                        {"error": "missing prompt"},
+                        "400 Bad Request",
+                    )
+                try:
+                    save_arena_prompt(arena_dir, str(prompt))
+                except ValueError as exc:
+                    return _json_response(
+                        start_response,
+                        {"error": str(exc)},
+                        "400 Bad Request",
+                    )
+                return _json_response(start_response, {"ok": True})
+
             if len(parts) >= 3:
                 provider_id = parts[1]
                 asset = "/".join(parts[2:])

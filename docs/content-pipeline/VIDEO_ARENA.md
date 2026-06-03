@@ -134,6 +134,13 @@ uv run --project agents/content-pipeline \
   python agents/content-pipeline/generate_video_arena.py POST_DIR --only vertex_veo
 ```
 
+**Re-extract thumbnails only** (no new T2V jobs; needs `ffmpeg` + `ffprobe`):
+
+```bash
+uv run --project agents/content-pipeline \
+  python agents/content-pipeline/regenerate_arena_thumbnails.py POST_DIR
+```
+
 ---
 
 ## Cost rough-order (per 6s 720p clip)

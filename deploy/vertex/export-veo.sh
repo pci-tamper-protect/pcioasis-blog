@@ -5,7 +5,7 @@
 # Status messages go to stderr; export statements go to stdout (for eval).
 #
 # Reads: VERTEX_CONFIG_FILE (default deploy/vertex/veo-config.json)
-# Optional fetch: VERTEX_CONFIG_GCP_SECRET + GCP_PROJECT
+# Optional fetch: GCP secret vertex_veo_config (override with VERTEX_CONFIG_GCP_SECRET)
 
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -14,11 +14,12 @@ source "$SCRIPT_DIR/../scripts/export-common.sh"
 
 CONFIG_FILE="${VERTEX_CONFIG_FILE:-$SCRIPT_DIR/veo-config.json}"
 GCP_PROJECT="${GCP_PROJECT:-pcioasis-blog}"
-GCP_SECRET="${VERTEX_CONFIG_GCP_SECRET:-}"
+GCP_SECRET="${VERTEX_CONFIG_GCP_SECRET:-vertex_veo_config}"
 SOURCE="$CONFIG_FILE"
 
-if [[ ! -f "$CONFIG_FILE" ]] && [[ -n "$GCP_SECRET" ]] && command -v gcloud >/dev/null 2>&1; then
+if [[ ! -f "$CONFIG_FILE" ]] && command -v gcloud >/dev/null 2>&1; then
   if gcloud secrets describe "$GCP_SECRET" --project="$GCP_PROJECT" >/dev/null 2>&1; then
+    mkdir -p "$(dirname "$CONFIG_FILE")"
     gcloud secrets versions access latest \
       --secret="$GCP_SECRET" \
       --project="$GCP_PROJECT" >"$CONFIG_FILE"
@@ -26,8 +27,15 @@ if [[ ! -f "$CONFIG_FILE" ]] && [[ -n "$GCP_SECRET" ]] && command -v gcloud >/de
   fi
 fi
 
+if [[ ! -f "$CONFIG_FILE" ]] && [[ -f "$SCRIPT_DIR/veo-config.json" ]]; then
+  CONFIG_FILE="$SCRIPT_DIR/veo-config.json"
+  SOURCE="$CONFIG_FILE"
+fi
+
 if [[ ! -f "$CONFIG_FILE" ]]; then
   export_report_err "Vertex Veo: missing $CONFIG_FILE"
+  echo "  cp deploy/vertex/veo-config.json $CONFIG_FILE" >&2
+  echo "  ./deploy/vertex/bootstrap-gcp-veo-config.sh" >&2
   echo "  gcloud auth application-default login" >&2
   exit 1
 fi

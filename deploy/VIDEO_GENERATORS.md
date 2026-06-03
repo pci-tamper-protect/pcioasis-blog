@@ -12,7 +12,7 @@ How to obtain API keys and config files for each **video arena** provider (`gene
 |----------|----------|---------------|---------------------|---------------|
 | Azure Sora 2 | `azure_sora` | [`deploy/az/`](az/README.md) | `/tmp/sora.json` | [`deploy/secrets/export-sora.sh`](secrets/export-sora.sh) |
 | Azure Sora v1 | `azure_sora_v1` | [`deploy/az/`](az/README.md) | same as Sora 2 | same |
-| Vertex Veo 3.1 Fast | `vertex_veo` | [`deploy/vertex/`](vertex/README.md) | [`deploy/vertex/veo-config.json`](vertex/veo-config.json) | [`deploy/vertex/export-veo.sh`](vertex/export-veo.sh) |
+| Vertex Veo 3.1 Fast | `vertex_veo` | [`deploy/vertex/`](vertex/README.md) | [`deploy/vertex/veo-config.json`](vertex/veo-config.json) (+ GCP `vertex_veo_config`) | [`deploy/vertex/export-veo.sh`](vertex/export-veo.sh) |
 | Bedrock Luma Ray 2 | `bedrock_luma` | [`deploy/aws/`](aws/README.md) | `/tmp/bedrock-luma.json` | [`deploy/aws/export-bedrock-luma.sh`](aws/export-bedrock-luma.sh) |
 | Replicate Hailuo 2.3 | `replicate_hailuo` | [`deploy/replicate/`](replicate/README.md) | `/tmp/replicate.json` | [`deploy/replicate/export-replicate.sh`](replicate/export-replicate.sh) |
 
@@ -151,6 +151,19 @@ Committed in-repo (no secrets): [`deploy/vertex/veo-config.json`](vertex/veo-con
 ```
 
 Override path: `export VERTEX_CONFIG_FILE=/path/to/veo.json`
+
+### Load & GCP backup
+
+```bash
+eval "$(./deploy/vertex/export-veo.sh)"
+
+# GCP Secret Manager (project pcioasis-blog) — same JSON, no API keys:
+chmod +x deploy/vertex/bootstrap-gcp-veo-config.sh
+./deploy/vertex/bootstrap-gcp-veo-config.sh
+# or: gcloud secrets versions add vertex_veo_config --project=pcioasis-blog --data-file=deploy/vertex/veo-config.json
+```
+
+CI/agents without repo checkout: set `VERTEX_CONFIG_FILE=/tmp/veo.json`; `export-veo.sh` fetches from `vertex_veo_config` when the local file is missing.
 
 ### Load
 

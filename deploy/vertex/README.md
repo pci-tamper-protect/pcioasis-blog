@@ -37,13 +37,21 @@ eval "$(./deploy/vertex/export-veo.sh)"
 # expect on stderr: ok: Vertex Veo loaded from .../deploy/vertex/veo-config.json
 ```
 
-## Optional: GCP Secret Manager
+## GCP Secret Manager
+
+Same JSON as [`veo-config.json`](veo-config.json) (no API keys — ADC handles auth). Mirrors Sora’s `azure_ai_foundry_sora2` pattern for CI and remote agents.
 
 ```bash
-gcloud secrets create vertex-veo-config --project=pcioasis-blog --replication-policy=automatic 2>/dev/null || true
-gcloud secrets versions add vertex-veo-config --project=pcioasis-blog --data-file=deploy/vertex/veo-config.json
-export VERTEX_CONFIG_GCP_SECRET=vertex-veo-config
-eval "$(./deploy/vertex/export-veo.sh)"
+chmod +x deploy/vertex/bootstrap-gcp-veo-config.sh
+./deploy/vertex/bootstrap-gcp-veo-config.sh
+# secret id: vertex_veo_config (project pcioasis-blog)
+```
+
+Fetch in CI:
+
+```bash
+export VERTEX_CONFIG_FILE=/tmp/veo.json
+eval "$(./deploy/vertex/export-veo.sh)"   # auto-fetches from GCP when /tmp/veo.json missing
 ```
 
 ## Test

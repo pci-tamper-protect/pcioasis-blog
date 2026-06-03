@@ -79,7 +79,19 @@ chmod +x deploy/secrets/bootstrap-gcp-sora-secrets.sh deploy/secrets/export-sora
 eval "$(./deploy/secrets/export-sora.sh)"   # sets AZURE_SORA_* only (not chat LLM env)
 ```
 
-Requires `gcloud` with permission to create/update secrets. Payload is the **same JSON** as `/tmp/ai`.
+**Vertex Veo (video arena, config only — ADC for auth):**
+
+```bash
+chmod +x deploy/vertex/bootstrap-gcp-veo-config.sh deploy/vertex/export-veo.sh
+
+# deploy/vertex/veo-config.json — committed in repo
+./deploy/vertex/bootstrap-gcp-veo-config.sh
+# or: gcloud secrets versions add vertex_veo_config --project=pcioasis-blog --data-file=deploy/vertex/veo-config.json
+
+eval "$(./deploy/vertex/export-veo.sh)"   # sets GOOGLE_CLOUD_* / VERTEX_VEO_*
+```
+
+Bootstrap scripts require `gcloud` with permission to create/update secrets.
 
 In GitHub Actions / Cloud Build, mount or fetch:
 

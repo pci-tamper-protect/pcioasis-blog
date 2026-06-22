@@ -4,6 +4,8 @@ Phase 1 generates **text metadata** (`clapper.txt`, `youtube-shorts.txt`, etc.).
 
 Text-to-video quality is inconsistent; treat this as an **arena**, not a single vendor bet.
 
+**Credential setup (API keys, config files, export scripts, local audio tools):** [`deploy/VIDEO_GENERATORS.md`](../../deploy/VIDEO_GENERATORS.md)
+
 ---
 
 ## Providers (mapped to your credits)
@@ -51,8 +53,8 @@ Each provider adapter adds vendor-specific parameters (resolution, duration, ref
 
 | Provider | Env vars |
 |----------|----------|
-| Azure Sora 2 | `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_API_KEY`, `AZURE_SORA_MODEL=sora-2` (or `AZURE_OPENAI_DEPLOYMENT`) |
-| Azure Sora v1 | Same endpoint/key as above + `AZURE_SORA_V1_DEPLOYMENT=sora` (separate deployment name in portal) |
+| Azure Sora 2 | `eval "$(./deploy/secrets/export-sora.sh)"` → `AZURE_SORA_ENDPOINT`, `AZURE_SORA_API_KEY`, `AZURE_SORA_DEPLOYMENT=sora-2` |
+| Azure Sora v1 | Same as Sora 2 endpoint/key + `AZURE_SORA_V1_DEPLOYMENT=sora` (if deployed on that resource) |
 | Vertex Veo | `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION=us-central1`, ADC (`gcloud auth application-default login`) |
 | Bedrock Luma | `AWS_REGION=us-west-2`, AWS creds with `bedrock:InvokeModel` + S3 write |
 | Replicate | `REPLICATE_API_TOKEN` |
@@ -67,6 +69,7 @@ Store secrets via existing `deploy/secrets/` patterns; never commit keys.
 content/posts/<section>/<slug>/_variants/video-arena/
   manifest.json           # run id, prompts, per-provider status
   prompt.txt              # shared text prompt sent to all providers
+  final_pass_brief.txt    # human notes: combine best of each clip for final-pass agent
   review.html             # human comparison UI (open locally)
   azure_sora/
     job.json
@@ -75,6 +78,13 @@ content/posts/<section>/<slug>/_variants/video-arena/
   azure_sora_v1/
     ...
   vertex_veo/
+    thumbnails/
+      first_non_black.jpg   # first frame with luma above black threshold
+      max_contrast.jpg      # ffmpeg thumbnail filter (sharpest/contrasty)
+      scene_01.jpg …        # up to 4 scene-cut frames
+    thumbnails.json       # candidate list + selected id
+    poster.jpg              # copy of chosen thumbnail (after you pick)
+    THUMBNAIL.txt           # selected candidate id
     ...
   bedrock_luma/
     ...
@@ -95,25 +105,49 @@ content/posts/<section>/<slug>/_variants/video-arena/
      content/posts/zkTLS/zktls-proof-of-provenance
    ```
 
-2. Open `review.html` in a browser **or** use the preview server arena tab:
+2. Open the arena dashboard via **preview server** (required for Save / Regenerate):
 
    ```bash
    uv run --project agents/content-pipeline \
      python agents/content-pipeline/preview_server.py POST_DIR
-   # http://<LAN-IP>:5050/arena  — same page, streams MP4s for phone review
+   # http://<LAN-IP>:5050/arena
    ```
 
-3. Score each candidate (1–5): **motion quality**, **prompt adherence**, **artifacts**, **usable for Clapper without re-edit**.
+   One scrollable page with three sections (jump links at top):
 
-4. Write winner to `WINNER.txt` (e.g. `vertex_veo`).
+   | Section | Save | Regenerate |
+   |---------|------|------------|
+   | **1 · Source text** | `prompt.txt` | Rebuild from `clapper.txt` |
+   | **2 · Videos & thumbnails** | thumbnail click → `poster.jpg` | Per-provider or **all** videos (uses saved prompt) |
+   | **3 · Final pass** | `final_pass_brief.txt` | LLM combine brief + stage `final_pass/video.mp4` from WINNER |
 
-5. Copy winner → `_variants/clapper/clip.mp4` and proceed with publish PR (Phase 4).
+3. **Pick a splash thumbnail** per provider (section 2; avoids blank Veo lead-in frames):
+   - **First non-black** — skips black/fade-in at t=0
+   - **Highest contrast** — ffmpeg `thumbnail` filter across the clip
+   - **Scene change** — up to 4 frames where `scene` score exceeds threshold
+   - In **preview_server** (`/arena`), click a tile to save `poster.jpg` + `THUMBNAIL.txt`
+   - Static `review.html` on disk: use preview server to persist, or copy manually
+
+5. Score each candidate in section 2 (1–5 motion, notes).
+
+6. Write winner to `WINNER.txt` in section 2 (e.g. `vertex_veo`) — used when you **Regenerate final pass** in section 3.
+
+7. Copy winner → `_variants/clapper/clip.mp4` and `poster.jpg` → `_variants/images/clapper-thumbnail.png` if needed.
+
+8. Proceed with publish PR (Phase 4).
 
 **Optional:** Re-run a single provider after tweaking `prompt.txt`:
 
 ```bash
 uv run --project agents/content-pipeline \
   python agents/content-pipeline/generate_video_arena.py POST_DIR --only vertex_veo
+```
+
+**Re-extract thumbnails only** (no new T2V jobs; needs `ffmpeg` + `ffprobe`):
+
+```bash
+uv run --project agents/content-pipeline \
+  python agents/content-pipeline/regenerate_arena_thumbnails.py POST_DIR
 ```
 
 ---

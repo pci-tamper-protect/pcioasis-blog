@@ -16,8 +16,15 @@ MAX_WAIT_S = 900
 def azure_video_client():
     from openai import OpenAI
 
-    endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT", "").rstrip("/")
-    api_key = os.environ.get("AZURE_OPENAI_API_KEY") or os.environ.get("AI_API_KEY")
+    endpoint = (
+        os.environ.get("AZURE_SORA_ENDPOINT")
+        or os.environ.get("AZURE_OPENAI_ENDPOINT", "")
+    ).rstrip("/")
+    api_key = (
+        os.environ.get("AZURE_SORA_API_KEY")
+        or os.environ.get("AZURE_OPENAI_API_KEY")
+        or os.environ.get("AI_API_KEY")
+    )
     if endpoint.endswith("/openai/v1"):
         return OpenAI(base_url=f"{endpoint}/", api_key=api_key)
     return OpenAI(
@@ -28,16 +35,23 @@ def azure_video_client():
 
 
 def azure_video_configured() -> bool:
-    return bool(
-        os.environ.get("AZURE_OPENAI_API_KEY") or os.environ.get("AI_API_KEY")
-    ) and bool(os.environ.get("AZURE_OPENAI_ENDPOINT"))
+    endpoint = os.environ.get("AZURE_SORA_ENDPOINT") or os.environ.get("AZURE_OPENAI_ENDPOINT")
+    key = (
+        os.environ.get("AZURE_SORA_API_KEY")
+        or os.environ.get("AZURE_OPENAI_API_KEY")
+        or os.environ.get("AI_API_KEY")
+    )
+    return bool(key) and bool(endpoint)
 
 
 def azure_video_missing_config_help(*, model_hint: str) -> str:
     return (
-        "eval \"$(./deploy/secrets/export-macos-keychain.sh)\"\n"
-        f"export AZURE_OPENAI_DEPLOYMENT={model_hint}   # deployment name in Foundry portal\n"
-        "Enable the Sora deployment on your Foundry resource (preview/GA per region)."
+        "# Sora uses a separate Foundry resource (often another subscription):\n"
+        "eval \"$(./deploy/secrets/export-sora.sh)\"\n"
+        "# or from GCP:\n"
+        "# gcloud secrets versions access latest --secret=azure_ai_foundry_sora2 --project=pcioasis-blog > /tmp/sora.json\n"
+        f"export AZURE_SORA_DEPLOYMENT={model_hint}   # portal deployment name\n"
+        "Chat LLM creds from export-macos-keychain.sh are NOT used when AZURE_SORA_* is set."
     )
 
 

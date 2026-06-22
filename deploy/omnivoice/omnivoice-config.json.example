@@ -1,0 +1,6 @@
+{
+  "api_base_url": "http://localhost:8000",
+  "ui_base_url": "http://localhost:5173",
+  "tts_backend": "omnivoice",
+  "default_language": "en"
+}

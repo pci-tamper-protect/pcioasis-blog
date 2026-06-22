@@ -8,9 +8,10 @@ from pathlib import Path
 from typing import Any
 
 from video_arena.critique import write_critique
-from video_arena.prompt_builder import build_video_prompt
+from video_arena.prompt_store import resolve_arena_prompt
 from video_arena.providers import all_providers
 from video_arena.review import write_review_html
+from video_arena.thumbnails import extract_thumbnail_candidates
 
 
 def _parse_frontmatter_title(index_md: Path) -> str:
@@ -42,10 +43,19 @@ def run_arena(
         raise FileNotFoundError(f"No index.md at {index_md}")
 
     title = _parse_frontmatter_title(index_md)
-    prompt, ref_image = build_video_prompt(post_dir, title=title)
     arena_dir = post_dir / "_variants" / "video-arena"
     arena_dir.mkdir(parents=True, exist_ok=True)
-    (arena_dir / "prompt.txt").write_text(prompt + "\n", encoding="utf-8")
+    prompt, ref_image = resolve_arena_prompt(post_dir, arena_dir, title=title)
+
+    existing_providers: dict[str, Any] = {}
+    manifest_path = arena_dir / "manifest.json"
+    if manifest_path.is_file():
+        try:
+            existing_providers = json.loads(manifest_path.read_text()).get(
+                "providers", {}
+            )
+        except json.JSONDecodeError:
+            existing_providers = {}
 
     provider_classes = all_providers()
     if only:
@@ -58,6 +68,19 @@ def run_arena(
         print(f"  [{provider.provider_id}] starting...", flush=True)
         out_sub = arena_dir / provider.provider_id
         result = provider.run(prompt, out_sub, reference_image=ref_image)
+        print(f"    -> {result.status}: {result.message}", flush=True)
+
+        thumb_meta: dict[str, Any] = {}
+        if result.status == "ok" and result.video_path:
+            video_file = Path(result.video_path)
+            if video_file.is_file():
+                thumb_meta = extract_thumbnail_candidates(video_file, out_sub)
+                n = len(thumb_meta.get("candidates", []))
+                if n:
+                    print(f"    -> thumbnails: {n} candidates", flush=True)
+                elif thumb_meta.get("error"):
+                    print(f"    -> thumbnails: skipped ({thumb_meta['error']})", flush=True)
+
         results[provider.provider_id] = {
             "display_name": provider.display_name,
             "status": result.status,
@@ -65,8 +88,9 @@ def run_arena(
             "model": result.model,
             "video_path": result.video_path,
             "elapsed_seconds": result.elapsed_seconds,
+            "thumbnails": thumb_meta.get("candidates", []),
+            "thumbnail_selected": thumb_meta.get("selected"),
         }
-        print(f"    -> {result.status}: {result.message}", flush=True)
 
         if not skip_critique and result.status in ("ok", "failed", "skipped"):
             job_path = out_sub / "job.json"
@@ -90,7 +114,7 @@ def run_arena(
         "post_dir": str(post_dir),
         "prompt": prompt,
         "reference_image": str(ref_image) if ref_image else None,
-        "providers": results,
+        "providers": {**existing_providers, **results},
     }
     (arena_dir / "manifest.json").write_text(
         json.dumps(manifest, indent=2) + "\n", encoding="utf-8"

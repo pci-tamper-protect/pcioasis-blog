@@ -2,6 +2,11 @@
 
 Bootstrap scripts move Azure AI Foundry credentials from a **local file** into macOS Keychain and GCP Secret Manager (`pcioasis-blog`). A small Python loader normalizes the same JSON for **Azure OpenAI**, plain **OpenAI**, and **Anthropic** callers.
 
+Azure CLI deploy helpers (Sora 2, list deployments): `deploy/az/scripts/` — see `deploy/az/README.md`.
+
+**Video arena (cloud T2V):** [`deploy/VIDEO_GENERATORS.md`](../VIDEO_GENERATORS.md)  
+**Local audio (Open Notebook, OmniVoice):** same hub — sections 5–6
+
 ## Secret file format
 
 Default path: `/tmp/ai` (override with `AI_SECRET_FILE`).
@@ -62,7 +67,32 @@ chmod +x deploy/secrets/bootstrap-gcp-secrets.sh
 ./deploy/secrets/bootstrap-gcp-secrets.sh
 ```
 
-Requires `gcloud` with permission to create/update secrets. Payload is the **same JSON** as `/tmp/ai`.
+**Sora (video arena, separate subscription/resource):**
+
+```bash
+chmod +x deploy/secrets/bootstrap-gcp-sora-secrets.sh deploy/secrets/export-sora.sh
+
+# /tmp/sora.json — see azure-ai-foundry-sora2.json.example
+./deploy/secrets/bootstrap-gcp-sora-secrets.sh
+# or manually:
+# gcloud secrets versions add azure_ai_foundry_sora2 --project=pcioasis-blog --data-file=/tmp/sora.json
+
+eval "$(./deploy/secrets/export-sora.sh)"   # sets AZURE_SORA_* only (not chat LLM env)
+```
+
+**Vertex Veo (video arena, config only — ADC for auth):**
+
+```bash
+chmod +x deploy/vertex/bootstrap-gcp-veo-config.sh deploy/vertex/export-veo.sh
+
+# deploy/vertex/veo-config.json — committed in repo
+./deploy/vertex/bootstrap-gcp-veo-config.sh
+# or: gcloud secrets versions add vertex_veo_config --project=pcioasis-blog --data-file=deploy/vertex/veo-config.json
+
+eval "$(./deploy/vertex/export-veo.sh)"   # sets GOOGLE_CLOUD_* / VERTEX_VEO_*
+```
+
+Bootstrap scripts require `gcloud` with permission to create/update secrets.
 
 In GitHub Actions / Cloud Build, mount or fetch:
 

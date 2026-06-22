@@ -166,7 +166,7 @@ Narrated YouTube video from HTML slides (separate from T2V arena).
 
 - Input: `_variants/youtube/script.md`, `_variants/youtube/chapters.txt`, HTML animation frames
 - Steps:
-  1. ElevenLabs (or local Coqui/Kokoro) generates narration MP3 from script
+  1. Narration MP3 from `script.md` — **ElevenLabs**, **[OmniVoice Studio](../../deploy/omnivoice/README.md)** (local TTS), or **[Open Notebook](../../deploy/open-notebook/README.md)** (podcast / multi-speaker)
   2. Playwright records HTML animation slides as MP4 segments
   3. ffmpeg assembles: slides + narration + text overlays → final MP4
 - Output: `_variants/youtube/video.mp4`
@@ -210,7 +210,7 @@ After ethical-first platforms are live (≥24h), post xrefs to dominant platform
 |---|---|---|
 | `ANTHROPIC_API_KEY` | pcioasis-blog repo | Phase 1 variant generation |
 | `PLANETKESTEN_PAT` | pcioasis-blog repo | PR creation, planet-kesten-site checkout |
-| `ELEVENLABS_API_KEY` | pcioasis-blog repo | Phase 3 narration |
+| `ELEVENLABS_API_KEY` | pcioasis-blog repo | Phase 3 narration (optional if using OmniVoice / Open Notebook local TTS) |
 | `BLUESKY_IDENTIFIER` + `BLUESKY_APP_PASSWORD` | pcioasis-blog repo | Phase 4 |
 | `MASTODON_ACCESS_TOKEN` | pcioasis-blog repo | Phase 4 |
 | `PIXELFED_ACCESS_TOKEN` | pcioasis-blog repo | Phase 4 |

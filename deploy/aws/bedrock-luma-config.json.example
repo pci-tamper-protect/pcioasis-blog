@@ -1,0 +1,7 @@
+{
+  "region": "us-west-2",
+  "s3_output_uri": "s3://your-bucket/video-arena/",
+  "model_id": "luma.ray-v2:0",
+  "duration": "5s",
+  "resolution": "720p"
+}

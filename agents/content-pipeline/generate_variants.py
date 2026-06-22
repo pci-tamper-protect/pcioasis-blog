@@ -12,12 +12,21 @@ Outputs:
     planetkesten.md     # broad/non-technical audience
     kbroughton.md       # highly technical audience
     linkedin.md         # Krebs-style short link post (format, not voice)
-    bluesky.txt         # short AT-Protocol post (300 chars)
+    facebook.txt        # Facebook feed post (community/civic tone)
+    threads.txt         # Threads post (Meta, ≤500 chars)
+    bluesky.txt         # Bluesky post (AT-Protocol, ≤300 chars)
     mastodon.txt        # Mastodon post with CW header for infosec.exchange
+    twitter-xref.txt    # tweet cross-referencing Bluesky post
     pixelfed.txt        # image-centric caption for Pixelfed
     clapper.txt         # short-form script for Clapper (primary short-video, US-first)
-    twitter-xref.txt    # manual helper: tweet referencing Bluesky post
-    tiktok-xref.txt     # manual helper: TikTok referencing Clapper post
+    tiktok.txt          # TikTok primary script (30–60 sec, HOOK/SCRIPT/CTA/CAPTION)
+    tiktok-xref.txt     # TikTok caption cross-ref to Clapper (≤150 chars)
+    snapchat.txt        # Snapchat Spotlight script (HOOK/TALK/CAPTION)
+    douyin-xref.txt     # Douyin cross-ref to Clapper
+    rednote-xref.txt    # RedNote cross-ref to Clapper
+    youtube-shorts.txt  # YouTube Shorts caption + overlays
+    reels-xref.txt      # Instagram Reels caption cross-ref to Clapper
+    capcut.txt          # CapCut long2short edit script (3–5 clip segments)
     youtube/
       script.md         # narration script with cues
       description.md    # video description with hashtags
@@ -98,16 +107,21 @@ def generate_variants(post_dir: Path, dry_run: bool = False) -> None:
         ("planetkesten", variants_dir / "planetkesten.md"),
         ("kbroughton", variants_dir / "kbroughton.md"),
         ("linkedin", variants_dir / "linkedin.md"),
+        ("facebook", variants_dir / "facebook.txt"),
+        ("threads", variants_dir / "threads.txt"),
         ("bluesky", variants_dir / "bluesky.txt"),
         ("mastodon", variants_dir / "mastodon.txt"),
+        ("twitter_xref", variants_dir / "twitter-xref.txt"),
         ("pixelfed", variants_dir / "pixelfed.txt"),
         ("clapper", variants_dir / "clapper.txt"),
+        ("tiktok", variants_dir / "tiktok.txt"),
         ("tiktok_xref", variants_dir / "tiktok-xref.txt"),
+        ("snapchat", variants_dir / "snapchat.txt"),
         ("douyin_xref", variants_dir / "douyin-xref.txt"),
         ("rednote_xref", variants_dir / "rednote-xref.txt"),
         ("youtube_shorts", variants_dir / "youtube-shorts.txt"),
         ("reels_xref", variants_dir / "reels-xref.txt"),
-        ("twitter_xref", variants_dir / "twitter-xref.txt"),
+        ("capcut", variants_dir / "capcut.txt"),
         ("youtube_script", youtube_dir / "script.md"),
         ("youtube_description", youtube_dir / "description.md"),
         ("youtube_chapters", youtube_dir / "chapters.txt"),

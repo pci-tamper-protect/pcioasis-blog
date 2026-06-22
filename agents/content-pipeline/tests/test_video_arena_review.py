@@ -37,6 +37,42 @@ class TestBuildReviewHtml:
         assert "← Back to variants" in html
         assert "Vertical 9:16 explainer" in html
 
+    def test_provider_card_splits_video_and_thumbnail_actions(self, tmp_path):
+        arena = tmp_path / "video-arena"
+        provider_dir = arena / "azure_sora"
+        provider_dir.mkdir(parents=True)
+        (provider_dir / "video.mp4").write_bytes(b"fake-mp4")
+
+        manifest = {
+            "title": "T",
+            "prompt": "p",
+            "providers": {
+                "azure_sora": {
+                    "display_name": "Azure Sora 2",
+                    "status": "ok",
+                    "message": "done",
+                }
+            },
+        }
+        html = build_review_html(
+            arena,
+            manifest,
+            href_for=lambda pid: f"/arena/{pid}/video.mp4",
+            api_base="/arena",
+        )
+        assert "Regenerate video" in html
+        assert "provider-field-video" in html
+        assert "provider-field-thumbs" in html
+        assert "provider-video-brief" in html
+        assert "provider-thumb-brief" in html
+        assert "btn-regenerate-video" in html
+        assert 'data-role="video-regen-status"' in html
+        assert "Regenerate thumbnails" in html
+        assert "btn-regenerate-thumbnails" in html
+        assert 'data-role="thumb-regen-status"' in html
+        assert "regenerate-thumbnails" in html
+        assert "setJobStatus" in html
+
     def test_load_manifest_missing_returns_none(self, tmp_path):
         assert load_arena_manifest(tmp_path / "missing") is None
 

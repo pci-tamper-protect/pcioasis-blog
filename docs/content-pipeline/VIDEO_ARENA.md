@@ -95,6 +95,37 @@ content/posts/<section>/<slug>/_variants/video-arena/
 
 ---
 
+## Video agents (user text + tools)
+
+Generalized agent directions and a **tool catalog** live in:
+
+- `agents/content-pipeline/video_arena/agent_directions.py` — specs, `execute_tool()`, direct mapping, optional LLM planner
+- `agents/content-pipeline/video_arena/AGENTS.md` — quick reference for Cursor / SDK agents
+
+**Intake user text** and run tools (direct or LLM-planned):
+
+```bash
+uv run --project agents/content-pipeline \
+  python agents/content-pipeline/run_video_arena_agent.py POST_DIR \
+  "Regenerate thumbnails for sora"
+
+# Ambiguous instructions → LLM returns JSON tool list, then executes
+uv run --project agents/content-pipeline \
+  python agents/content-pipeline/run_video_arena_agent.py POST_DIR \
+  --text-file content/posts/.../video-arena/final_pass_brief.txt
+
+# Print orchestrator spec + tools for a coding agent
+uv run --project agents/content-pipeline \
+  python agents/content-pipeline/run_video_arena_agent.py POST_DIR \
+  --print-directions orchestrator
+```
+
+**Roles:** `orchestrator` (default), `prompt`, `final_pass`, `critique`.
+
+**Rule:** call catalog tools first (`ffmpeg_combine`, `regenerate_provider_video`, etc.). Use LLM only to draft text or when `assess_combine_brief` says generative regen is required.
+
+---
+
 ## Human review workflow
 
 1. Run arena (generates up to five MP4s — may take 5–15 min each):
@@ -119,7 +150,7 @@ content/posts/<section>/<slug>/_variants/video-arena/
    |---------|------|------------|
    | **1 · Source text** | `prompt.txt` | Rebuild from `clapper.txt` |
    | **2 · Videos & thumbnails** | thumbnail click → `poster.jpg` | Per-provider or **all** videos (uses saved prompt) |
-   | **3 · Final pass** | `final_pass_brief.txt` | LLM combine brief + stage `final_pass/video.mp4` from WINNER |
+   | **3 · Final pass** | `final_pass_brief.txt` | Assess + ffmpeg combine (Sora→Veo when brief allows) or LLM brief draft |
 
 3. **Pick a splash thumbnail** per provider (section 2; avoids blank Veo lead-in frames):
    - **First non-black** — skips black/fade-in at t=0

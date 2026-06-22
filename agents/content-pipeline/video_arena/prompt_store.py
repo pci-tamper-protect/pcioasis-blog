@@ -86,7 +86,7 @@ def save_final_pass_brief(arena_dir: Path, brief: str) -> None:
 
 
 def load_arena_agent_context(arena_dir: Path) -> dict:
-    """Bundle text inputs for a final-pass / combine agent."""
+    """Bundle text inputs for arena agents (prompt, brief, winner, providers)."""
     manifest_path = arena_dir / "manifest.json"
     manifest: dict = {}
     if manifest_path.is_file():

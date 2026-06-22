@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from video_arena.credential_bootstrap import ensure_sora_env
 from video_arena.critique import write_critique
 from video_arena.prompt_store import resolve_arena_prompt
 from video_arena.providers import all_providers
@@ -35,9 +36,11 @@ def run_arena(
     *,
     only: list[str] | None = None,
     skip_critique: bool = False,
+    prompt_override: str | None = None,
 ) -> Path:
     """Generate video candidates under post_dir/_variants/video-arena/."""
     post_dir = post_dir.resolve()
+    ensure_sora_env(post_dir=post_dir)
     index_md = post_dir / "index.md"
     if not index_md.is_file():
         raise FileNotFoundError(f"No index.md at {index_md}")
@@ -45,7 +48,14 @@ def run_arena(
     title = _parse_frontmatter_title(index_md)
     arena_dir = post_dir / "_variants" / "video-arena"
     arena_dir.mkdir(parents=True, exist_ok=True)
-    prompt, ref_image = resolve_arena_prompt(post_dir, arena_dir, title=title)
+    if prompt_override and prompt_override.strip():
+        prompt = prompt_override.strip()
+        ref_image = None
+        from video_arena.prompt_builder import find_reference_image
+
+        ref_image = find_reference_image(post_dir)
+    else:
+        prompt, ref_image = resolve_arena_prompt(post_dir, arena_dir, title=title)
 
     existing_providers: dict[str, Any] = {}
     manifest_path = arena_dir / "manifest.json"
@@ -119,7 +129,14 @@ def run_arena(
     (arena_dir / "manifest.json").write_text(
         json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
     )
-    review_path = write_review_html(arena_dir, manifest)
+    review_path = write_review_html(
+        arena_dir,
+        manifest,
+        href_for=lambda pid: f"/arena/{pid}/video.mp4",
+        thumb_href_for=lambda pid, rel: f"/arena/{pid}/{rel}",
+        back_href="/",
+        api_base="/arena",
+    )
     print(f"\nReview: {review_path}")
     if not (arena_dir / "WINNER.txt").is_file():
         (arena_dir / "WINNER.txt").write_text(

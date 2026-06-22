@@ -337,4 +337,107 @@ PLATFORM_SPECS: dict[str, str] = {
         Output: ONLY chapter lines.
         """
     ),
+    "facebook": _PLATFORM_PREAMBLE
+    + dedent(
+        """\
+        CHANNEL: Facebook (community/civic feed post).
+
+        First 2–3 lines are visible before "see more" (~300 chars) — write them as a
+        standalone hook. Optimal body: 80–250 words; link card auto-attaches.
+
+        Performance patterns (2026):
+        - Concrete local impact > abstract policy; name the place and the people
+        - Conversational, community tone; end with a question to drive comments
+        - 1–2 hashtags MAX inline; no hashtag dumps (minimal algorithmic weight in 2026)
+        - One canonical URL alone on its own last line (triggers link preview card)
+        - Share-worthy framing: "Here's what this means for [place]"
+
+        REQUIRED output format:
+          Line 1: META_DESCRIPTION: <one sentence, ≤155 chars>
+          Line 2: blank
+          Lines 3+: Facebook post body (80–250 words); canonical URL on last line alone
+        """
+    ),
+    "threads": _PLATFORM_PREAMBLE
+    + dedent(
+        f"""\
+        CHANNEL: Threads (Meta text platform; Instagram-connected audience).
+
+        Hard limit: 500 characters per post. This generator outputs a single post.
+
+        Performance patterns (2026):
+        - No hashtags (Threads deprioritizes them; no hashtag search as of 2026)
+        - Casual, first-person or conversational tone; warmer than Bluesky
+        - Front-load the hook; end with a question or conversation invite
+        - URL on its own line triggers link preview — no need to describe the link
+        - Cross-audience: Instagram followers see Threads; write for general audience
+
+        Output: ONLY the post text (≤500 chars).
+        """
+    ),
+    "snapchat": _PLATFORM_PREAMBLE
+    + dedent(
+        """\
+        CHANNEL: Snapchat Spotlight (short vertical video, 5–60 sec).
+
+        Hard limit: 140 characters for caption. NO external URLs (Spotlight blocks them).
+        Audience: 13–34, trend-driven, fast consumption.
+
+        Performance patterns (2026):
+        - HOOK: on-screen text in first 2 seconds — ≤6 words, curiosity-gap or punchy claim
+        - TALK: 3–4 spoken lines, ≤8 words each, plain language
+        - Caption: keyword-first, 1–2 emoji, 2–3 hashtags from Snapchat trending topics
+        - No links; close with brand or account name
+
+        REQUIRED output format (agents parse prefixes):
+          HOOK: <≤6 words on-screen>
+          TALK: <point 1>
+          TALK: <point 2>
+          TALK: <point 3>
+          CAPTION: <≤140 chars, no URL>
+        """
+    ),
+    "tiktok": _PLATFORM_PREAMBLE
+    + dedent(
+        """\
+        CHANNEL: TikTok (primary short-form video, 30–60 seconds).
+
+        Performance patterns (2026):
+        - Hook: first 3 seconds on screen must open a curiosity gap or pattern interrupt
+        - Spoken script: conversational, ≤12 words per sentence, present tense
+        - Build to a payoff: reveal or "wait for it" structure outperforms lectures
+        - CTA: follow for part 2 or open a question to comments
+        - Caption: 150 chars max; primary keyword in first 40 chars
+        - Use 3–5 topic-specific hashtags (1 broad + 2 niche + 1 trending); skip #fyp in 2026
+
+        REQUIRED output format (agents parse prefixes):
+          HOOK: <≤8 words on-screen text>
+          SCRIPT: <full spoken narration — one sentence per line, 30–60 sec worth>
+          CTA: <call to action, 1 line>
+          CAPTION: <≤150 chars>
+        """
+    ),
+    "capcut": _PLATFORM_PREAMBLE
+    + dedent(
+        """\
+        CHANNEL: CapCut long2short edit script (AI clip extraction from long-form source).
+
+        Identify 3–5 shareable 15–30 second clip segments. For each clip provide a
+        structured block using the prefixes below so CapCut's API or a human editor
+        can ingest it directly.
+
+        REQUIRED output format:
+          CLIP 1: <topic label>
+          HOOK: <≤8 words on-screen overlay for first 2 sec>
+          SPOKEN: <key lines from source — one sentence per line, 15–30 sec worth>
+          OVERLAY: <on-screen text caption line 1>
+          OVERLAY: <on-screen text caption line 2>
+          TRANSITION: <cut | smash cut | fade>
+
+          CLIP 2: ...
+          (3–5 clips total)
+
+          SHARED_CAPTION: <≤150 chars caption for all clips when cross-posted>
+        """
+    ),
 }

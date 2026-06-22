@@ -6,8 +6,9 @@ import os
 from pathlib import Path
 
 from video_arena.providers import register
+from video_arena.credential_bootstrap import ensure_sora_env
 from video_arena.providers.azure_video_common import (
-    azure_video_configured,
+    azure_sora_env_configured,
     azure_video_missing_config_help,
     run_azure_sora_job,
 )
@@ -23,7 +24,8 @@ class AzureSoraProvider(ArenaProvider):
     default_model = DEFAULT_MODEL
 
     def is_configured(self) -> bool:
-        return azure_video_configured()
+        ensure_sora_env()
+        return azure_sora_env_configured()
 
     def missing_config_help(self) -> str:
         return azure_video_missing_config_help(model_hint="sora-2")
@@ -35,9 +37,12 @@ class AzureSoraProvider(ArenaProvider):
         *,
         reference_image: Path | None = None,
     ) -> ProviderResult:
-        model = os.environ.get("AZURE_SORA_MODEL") or os.environ.get(
-            "AZURE_SORA_DEPLOYMENT", DEFAULT_MODEL
-        ) or os.environ.get("AZURE_OPENAI_DEPLOYMENT", DEFAULT_MODEL)
+        ensure_sora_env()
+        model = (
+            os.environ.get("AZURE_SORA_MODEL")
+            or os.environ.get("AZURE_SORA_DEPLOYMENT")
+            or DEFAULT_MODEL
+        )
         return run_azure_sora_job(
             provider_id=self.provider_id,
             model=model,

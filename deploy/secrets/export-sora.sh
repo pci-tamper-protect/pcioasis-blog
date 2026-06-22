@@ -18,6 +18,7 @@ if [[ ! -f "$SORA_FILE" ]] && command -v gcloud >/dev/null 2>&1; then
     gcloud secrets versions access latest \
       --secret="$GCP_SORA_SECRET" \
       --project="$GCP_PROJECT" >"$SORA_FILE"
+    chmod 600 "$SORA_FILE"
   fi
 fi
 

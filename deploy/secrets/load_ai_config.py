@@ -119,15 +119,14 @@ def normalize_sora_secret_fields(data: dict[str, Any]) -> dict[str, Any]:
 
 def foundry_services_url_to_openai_v1(url: str) -> str:
     """Map …services.ai.azure.com base URL to OpenAI v1 surface for video/chat SDK."""
-    host = url.strip().rstrip("/").replace("https://", "").split("/")[0]
+    host = (
+        url.strip().rstrip("/").replace("https://", "").replace("http://", "").split("/")[0]
+    )
     resource = host.replace(".services.ai.azure.com", "").replace(
         ".cognitiveservices.azure.com", ""
     )
     if not resource or resource == host:
-        ep = url.strip().rstrip("/")
-        if ep.endswith("/openai/v1"):
-            return ep
-        return ep
+        return url.strip().rstrip("/")
     return f"https://{resource}.openai.azure.com/openai/v1"
 
 
@@ -260,8 +259,8 @@ def load_sora_config(
     if prefer_keychain:
         raw = _read_keychain(KEYCHAIN_SERVICE_SORA_JSON, os.environ.get("KEYCHAIN_ACCOUNT", "default"))
         if raw:
-            data = json.loads(raw) if raw.strip().startswith("{") else {"api_key": raw}
-            data = normalize_sora_secret_fields(data if isinstance(data, dict) else {})
+            data: dict[str, Any] = json.loads(raw) if raw.strip().startswith("{") else {}
+            data = normalize_sora_secret_fields(data)
             cfg = _parse_secret_payload(raw)
             return AIConfig(**{**cfg.__dict__, "source": f"keychain:{KEYCHAIN_SERVICE_SORA_JSON}"}), data
 

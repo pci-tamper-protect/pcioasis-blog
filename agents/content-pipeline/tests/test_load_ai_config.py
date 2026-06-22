@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -11,6 +12,7 @@ sys.path.insert(0, str(REPO_ROOT))
 from deploy.secrets.load_ai_config import (  # noqa: E402
     _parse_secret_payload,
     foundry_services_url_to_openai_v1,
+    load_sora_config,
     normalize_azure_endpoint,
     normalize_sora_secret_fields,
 )
@@ -52,5 +54,27 @@ class TestSoraSecretNormalization:
           "subscription": "management-ptp-global"
         }"""
         cfg = _parse_secret_payload(raw)
-        assert cfg.azure_openai_endpoint.endswith("/openai/v1")
+        assert cfg.azure_openai_endpoint == "https://mgmt.openai.azure.com/openai/v1"
         assert cfg.api_key_name == "management-ptp-global"
+
+
+class TestLoadSoraConfig:
+    def test_load_from_file(self, tmp_path):
+        sora_file = tmp_path / "sora.json"
+        sora_file.write_text(
+            json.dumps({
+                "target_url": "https://my-resource.services.ai.azure.com",
+                "api_key": "test-key-abc",
+                "model_name": "sora-2",
+            }),
+            encoding="utf-8",
+        )
+        cfg, data = load_sora_config(sora_file)
+        assert cfg.api_key == "test-key-abc"
+        assert cfg.azure_openai_endpoint == "https://my-resource.openai.azure.com/openai/v1"
+        assert data.get("deployment_name") == "sora-2"
+
+    def test_missing_file_raises(self, tmp_path):
+        import pytest
+        with pytest.raises(FileNotFoundError, match="no Sora credentials"):
+            load_sora_config(tmp_path / "nonexistent.json")

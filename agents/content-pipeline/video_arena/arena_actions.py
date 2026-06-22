@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -18,18 +19,13 @@ from video_arena.prompt_store import (
     save_final_pass_brief,
 )
 from video_arena.review import load_arena_manifest, write_review_html
+from video_arena.agent_directions import FINAL_PASS_AGENT_SPEC
+from video_arena.thumbnails import extract_thumbnail_candidates
 
-FINAL_PASS_SPEC = """\
-You are helping an editor combine the BEST parts of several text-to-video arena clips
-into one Clapper-ready short. You have NOT seen pixels — only metadata and human notes.
+FINAL_PASS_SPEC = FINAL_PASS_AGENT_SPEC + """
 
-Write a practical **final-pass combine brief** (≤250 words) the downstream agent can follow:
-- Per provider id (azure_sora, vertex_veo, etc.): what to borrow (timing, motion, lighting, framing)
-- What to avoid (e.g. blank lead-in frames, artifacts)
-- Assembly guidance: order of beats, target duration, style constraints
-- If a WINNER is named, say whether to use it as the base plate or only as reference
-
-Use clear bullet lists. No markdown code fences.
+Write a practical combine brief (≤250 words) with clear bullet lists. No markdown code fences.
+Downstream tools: assess_combine_brief → ffmpeg_combine or generative T2V regen.
 """
 
 
@@ -55,8 +51,9 @@ def regenerate_all_provider_videos(
     provider_ids: list[str] | None = None,
     *,
     skip_critique: bool = True,
+    shared_prompt: str | None = None,
 ) -> list[str]:
-    """Re-run T2V for multiple providers (defaults to keys in manifest)."""
+    """Re-run T2V for multiple providers using shared script (section 1)."""
     manifest = load_arena_manifest(arena_dir)
     if manifest is None:
         raise FileNotFoundError("manifest.json missing")
@@ -65,11 +62,20 @@ def regenerate_all_provider_videos(
     if not ids:
         raise ValueError("no providers in manifest")
 
+    if shared_prompt is not None and shared_prompt.strip():
+        save_arena_prompt(arena_dir, shared_prompt.strip())
+        manifest = load_arena_manifest(arena_dir) or manifest
+
     prompt = load_prompt_text(arena_dir, manifest)
     if not prompt:
-        raise ValueError("prompt.txt is empty — save or regenerate source text first")
+        raise ValueError("prompt.txt is empty — save section 1 script first")
 
-    run_arena(post_dir, only=ids, skip_critique=skip_critique)
+    run_arena(
+        post_dir,
+        only=ids,
+        skip_critique=skip_critique,
+        prompt_override=prompt,
+    )
     return ids
 
 
@@ -79,23 +85,68 @@ def regenerate_provider_video(
     provider_id: str,
     *,
     skip_critique: bool = True,
+    video_brief: str | None = None,
 ) -> dict[str, Any]:
-    """Re-run T2V for one provider using current prompt.txt."""
+    """Re-run T2V for one provider (per-provider video_brief overrides shared prompt.txt)."""
+    from video_arena.provider_briefs import (
+        resolve_provider_video_prompt,
+        save_video_brief,
+    )
+
     manifest = load_arena_manifest(arena_dir)
     if manifest is None:
         raise FileNotFoundError("manifest.json missing — run generate_video_arena.py first")
 
-    prompt = load_prompt_text(arena_dir, manifest)
-    if not prompt:
-        raise ValueError("prompt.txt is empty — save or regenerate source text first")
+    provider_dir = arena_dir / provider_id
+    if video_brief is not None:
+        save_video_brief(provider_dir, video_brief)
 
-    run_arena(post_dir, only=[provider_id], skip_critique=skip_critique)
+    manifest = load_arena_manifest(arena_dir) or manifest
+    shared = load_prompt_text(arena_dir, manifest)
+    prompt = resolve_provider_video_prompt(shared, provider_dir)
+    if not prompt:
+        raise ValueError(
+            "No video script — fill section 1 or this provider's video text box"
+        )
+
+    run_arena(
+        post_dir,
+        only=[provider_id],
+        skip_critique=skip_critique,
+        prompt_override=prompt,
+    )
     manifest = load_arena_manifest(arena_dir) or {}
     provider = manifest.get("providers", {}).get(provider_id, {})
     return {
         "provider_id": provider_id,
         "status": provider.get("status"),
         "message": provider.get("message"),
+    }
+
+
+def regenerate_provider_thumbnails(
+    arena_dir: Path,
+    provider_id: str,
+    *,
+    thumbnail_brief: str | None = None,
+) -> dict[str, Any]:
+    """Re-extract thumbnail candidates from the provider's current video.mp4."""
+    from video_arena.provider_briefs import save_thumbnail_brief
+
+    provider_dir = arena_dir / provider_id
+    if thumbnail_brief is not None:
+        save_thumbnail_brief(provider_dir, thumbnail_brief)
+
+    video = provider_dir / "video.mp4"
+    if not video.is_file():
+        raise FileNotFoundError(f"No video for {provider_id} — run Regen video first")
+
+    meta = extract_thumbnail_candidates(video, provider_dir)
+    candidates = meta.get("candidates") or []
+    return {
+        "provider_id": provider_id,
+        "count": len(candidates),
+        "poster": meta.get("poster"),
     }
 
 
@@ -109,7 +160,7 @@ def _parse_winner_id(winner_line: str) -> str:
 def _collect_provider_notes(arena_dir: Path) -> str:
     chunks: list[str] = []
     for sub in sorted(arena_dir.iterdir()):
-        if not sub.is_dir() or sub.name in ("final_pass",):
+        if not sub.is_dir() or sub.name == "final_pass":
             continue
         critique = sub / "critique.md"
         job = sub / "job.json"
@@ -158,7 +209,8 @@ def run_final_pass(
         try:
             brief = _llm_draft_final_pass_brief(arena_dir, ctx)
             save_final_pass_brief(arena_dir, brief)
-        except SystemExit:
+        except (ImportError, SystemExit):
+            # ai_backend absent or credentials unconfigured; fall back to template
             brief = _template_final_pass_brief(ctx, arena_dir)
             save_final_pass_brief(arena_dir, brief)
     elif not brief:
@@ -177,7 +229,7 @@ def run_final_pass(
 
     if source_video is None:
         for sub in sorted(arena_dir.iterdir()):
-            if not sub.is_dir() or sub.name in ("final_pass",):
+            if not sub.is_dir() or sub.name == "final_pass":
                 continue
             vid = sub / "video.mp4"
             if vid.is_file():
@@ -186,11 +238,38 @@ def run_final_pass(
                 break
 
     out_video = final_dir / "video.mp4"
-    if source_video:
+    video_note = "No source video found — generate provider clips first."
+    combine_meta: dict[str, Any] | None = None
+    sora_vid = arena_dir / "azure_sora" / "video.mp4"
+    veo_vid = arena_dir / "vertex_veo" / "video.mp4"
+    if sora_vid.is_file() and veo_vid.is_file():
+        try:
+            from video_arena.final_pass_combine import run_ffmpeg_final_pass
+
+            combine_meta = run_ffmpeg_final_pass(arena_dir, brief)
+            if combine_meta.get("output") and out_video.is_file():
+                assessment = combine_meta.get("assessment", {})
+                video_note = (
+                    f"FFmpeg combine ({assessment.get('mode', 'concat')}): "
+                    f"Sora phone/chat → Veo animation; audio per brief. "
+                    f"{assessment.get('notes', '')}"
+                )
+            elif combine_meta.get("skipped"):
+                if source_video:
+                    shutil.copy2(source_video, out_video)
+                video_note = (
+                    "Combine needs generative regen — see final_pass/combine_assessment.json. "
+                    f"Staged fallback: {winner_id}/video.mp4"
+                    if source_video
+                    else video_note
+                )
+        except (RuntimeError, subprocess.CalledProcessError, FileNotFoundError) as exc:
+            if source_video:
+                shutil.copy2(source_video, out_video)
+            video_note = f"FFmpeg combine failed ({exc}); staged {winner_id}/video.mp4"
+    elif source_video:
         shutil.copy2(source_video, out_video)
-        video_note = f"Staged from {winner_id}/video.mp4 (replace with true combine when agent ready)."
-    else:
-        video_note = "No source video found — generate provider clips first."
+        video_note = f"Staged from {winner_id}/video.mp4 (add both Sora + Veo for auto-combine)."
 
     job = {
         "status": "ok" if source_video else "pending",

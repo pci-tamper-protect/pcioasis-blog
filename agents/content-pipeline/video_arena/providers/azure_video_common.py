@@ -16,15 +16,14 @@ MAX_WAIT_S = 900
 def azure_video_client():
     from openai import OpenAI
 
-    endpoint = (
-        os.environ.get("AZURE_SORA_ENDPOINT")
-        or os.environ.get("AZURE_OPENAI_ENDPOINT", "")
-    ).rstrip("/")
-    api_key = (
-        os.environ.get("AZURE_SORA_API_KEY")
-        or os.environ.get("AZURE_OPENAI_API_KEY")
-        or os.environ.get("AI_API_KEY")
+    endpoint = os.environ.get("AZURE_SORA_ENDPOINT", "").rstrip("/")
+    api_key = os.environ.get("AZURE_SORA_API_KEY") or os.environ.get(
+        "AZURE_OPENAI_API_KEY"
     )
+    if not endpoint or not api_key:
+        raise RuntimeError(
+            "Sora credentials missing. Run: eval \"$(./deploy/secrets/export-sora.sh)\""
+        )
     if endpoint.endswith("/openai/v1"):
         return OpenAI(base_url=f"{endpoint}/", api_key=api_key)
     return OpenAI(
@@ -34,13 +33,23 @@ def azure_video_client():
     )
 
 
-def azure_video_configured() -> bool:
-    endpoint = os.environ.get("AZURE_SORA_ENDPOINT") or os.environ.get("AZURE_OPENAI_ENDPOINT")
-    key = (
-        os.environ.get("AZURE_SORA_API_KEY")
-        or os.environ.get("AZURE_OPENAI_API_KEY")
-        or os.environ.get("AI_API_KEY")
+def azure_sora_env_configured() -> bool:
+    """True when dedicated Sora Foundry vars are set (not chat LLM fallback)."""
+    return bool(
+        os.environ.get("AZURE_SORA_ENDPOINT")
+        and (
+            os.environ.get("AZURE_SORA_API_KEY")
+            or os.environ.get("AZURE_OPENAI_API_KEY")
+        )
     )
+
+
+def azure_video_configured() -> bool:
+    """Configured for Sora T2V — prefers AZURE_SORA_* after credential bootstrap."""
+    if azure_sora_env_configured():
+        return True
+    endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
+    key = os.environ.get("AZURE_OPENAI_API_KEY") or os.environ.get("AI_API_KEY")
     return bool(key) and bool(endpoint)
 
 
@@ -55,6 +64,26 @@ def azure_video_missing_config_help(*, model_hint: str) -> str:
     )
 
 
+def _sora_deployment_404_message(model: str, exc: Exception) -> str:
+    ep = os.environ.get("AZURE_SORA_ENDPOINT", "(unset)")
+    return (
+        f"Sora deployment '{model}' not found on {ep}. "
+        "Chat LLM creds (AZURE_OPENAI_*) are not used for video — run "
+        'eval "$(./deploy/secrets/export-sora.sh)" and restart preview_server.'
+    )
+
+
+def _create_sora_video(client: Any, create_kwargs: dict[str, Any]) -> Any:
+    model = str(create_kwargs.get("model", "sora-2"))
+    try:
+        return client.videos.create(**create_kwargs)
+    except Exception as exc:  # noqa: BLE001
+        msg = str(exc)
+        if "deployment" in msg.lower() and "does not exist" in msg.lower():
+            raise RuntimeError(_sora_deployment_404_message(model, exc)) from exc
+        raise
+
+
 def run_azure_sora_job(
     *,
     provider_id: str,
@@ -67,7 +96,15 @@ def run_azure_sora_job(
     allow_reference_image: bool = True,
 ) -> ProviderResult:
     """Poll Azure Foundry video generation until complete or timeout."""
-    client = azure_video_client()
+    try:
+        client = azure_video_client()
+    except RuntimeError as exc:
+        return ProviderResult(
+            provider_id=provider_id,
+            model=model,
+            status="failed",
+            message=str(exc),
+        )
     create_kwargs: dict[str, Any] = {
         "model": model,
         "prompt": prompt,
@@ -75,16 +112,26 @@ def run_azure_sora_job(
         "seconds": seconds,
     }
     ref_note: str | None = None
-    if reference_image and reference_image.is_file():
-        if allow_reference_image:
-            with reference_image.open("rb") as fh:
-                create_kwargs["input_reference"] = fh
-                job = client.videos.create(**create_kwargs)
+    try:
+        if reference_image and reference_image.is_file():
+            if allow_reference_image:
+                with reference_image.open("rb") as fh:
+                    create_kwargs["input_reference"] = fh
+                    job = _create_sora_video(client, create_kwargs)
+            else:
+                ref_note = (
+                    f"reference image ignored ({reference_image.name}); model is text-only"
+                )
+                job = _create_sora_video(client, create_kwargs)
         else:
-            ref_note = f"reference image ignored ({reference_image.name}); model is text-only"
-            job = client.videos.create(**create_kwargs)
-    else:
-        job = client.videos.create(**create_kwargs)
+            job = _create_sora_video(client, create_kwargs)
+    except RuntimeError as exc:
+        return ProviderResult(
+            provider_id=provider_id,
+            model=model,
+            status="failed",
+            message=str(exc),
+        )
 
     job_id = getattr(job, "id", None) or str(job)
     deadline = time.time() + MAX_WAIT_S

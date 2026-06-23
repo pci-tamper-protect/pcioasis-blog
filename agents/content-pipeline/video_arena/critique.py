@@ -5,11 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 
 from ai_backend import complete
+from video_arena.agent_directions import CRITIQUE_AGENT_SPEC
 
-
-CRITIQUE_SPEC = """\
-You are reviewing a SHORT-FORM VIDEO CANDIDATE for a tech explainer (Clapper / YouTube Shorts).
-You have NOT seen the pixels — only the generation prompt and job metadata.
+CRITIQUE_SPEC = CRITIQUE_AGENT_SPEC + """
 
 Write a concise critique (≤200 words) with sections:
 ## Prompt adherence (1-5)

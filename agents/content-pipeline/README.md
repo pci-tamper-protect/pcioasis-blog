@@ -73,7 +73,95 @@ uv run --project agents/content-pipeline \
 open content/posts/zkTLS/zktls-proof-of-provenance/_variants/video-arena/review.html
 ```
 
-See `docs/content-pipeline/VIDEO_ARENA.md`.
+See `docs/content-pipeline/VIDEO_ARENA.md` and `video_arena/AGENTS.md`.
+
+## Audio overview (Gemini API)
+
+NotebookLM-style two-host podcast from a post — **bills to your GCP project** via Vertex (same env as Veo), no Enterprise license.
+
+```bash
+uv sync --project agents/content-pipeline --extra gemini
+eval "$(./deploy/vertex/export-veo.sh)"
+export GOOGLE_CLOUD_QUOTA_PROJECT=pcioasis-blog
+
+uv run --project agents/content-pipeline --extra gemini \
+  python agents/content-pipeline/generate_audio_overview.py \
+  content/posts/llm-security/meta-instagram-ai-excessive-agency
+
+# Script only (skip TTS):
+uv run --project agents/content-pipeline --extra gemini \
+  python agents/content-pipeline/generate_audio_overview.py POST_DIR --script-only
+```
+
+Output: `_variants/audio-overview/script.txt`, `overview.wav`, `manifest.json`.
+
+Optional: `GEMINI_API_KEY` (AI Studio) instead of Vertex; `GEMINI_SCRIPT_MODEL`, `GEMINI_TTS_MODEL`.
+
+**Agent from user text** (tools direct or LLM-planned):
+
+```bash
+uv run --project agents/content-pipeline \
+  python agents/content-pipeline/run_video_arena_agent.py POST_DIR \
+  "Run final pass combine"
+```
+
+## Post variants to social platforms
+
+After `generate_variants.py` writes `_variants/`, post them directly to platforms.
+
+```bash
+uv sync --project agents/content-pipeline --extra social
+uv run --project agents/content-pipeline --extra social \
+  python -m playwright install chromium   # one-time browser install
+```
+
+**One-time login per Playwright platform** (opens a real headed browser):
+
+```bash
+# Run once per platform; session saved to ~/.config/pcioasis-posting/sessions/
+uv run --project agents/content-pipeline --extra social \
+  python agents/content-pipeline/post_variants.py --login facebook
+
+uv run --project agents/content-pipeline --extra social \
+  python agents/content-pipeline/post_variants.py --login threads
+
+uv run --project agents/content-pipeline --extra social \
+  python agents/content-pipeline/post_variants.py --login twitter
+
+uv run --project agents/content-pipeline --extra social \
+  python agents/content-pipeline/post_variants.py --login linkedin
+```
+
+**API platforms** (set env vars, no login needed):
+
+```bash
+export BLUESKY_HANDLE="yourhandle.bsky.social"
+export BLUESKY_APP_PASSWORD="xxxx-xxxx-xxxx-xxxx"   # Settings → App passwords
+export MASTODON_ACCESS_TOKEN="..."                    # Settings → Development → New app
+export MASTODON_SERVER="infosec.exchange"             # or your instance
+```
+
+**Post all text platforms:**
+
+```bash
+uv run --project agents/content-pipeline --extra social \
+  python agents/content-pipeline/post_variants.py \
+  content/posts/district31/cisa-brief
+
+# Specific platforms only
+uv run --project agents/content-pipeline --extra social \
+  python agents/content-pipeline/post_variants.py \
+  content/posts/district31/cisa-brief --platforms bluesky,mastodon,linkedin
+
+# Dry run first
+uv run --project agents/content-pipeline --extra social \
+  python agents/content-pipeline/post_variants.py \
+  content/posts/district31/cisa-brief --dry-run
+```
+
+**Platforms:** `facebook` `threads` `twitter` `linkedin` — Playwright browser sessions
+`bluesky` `mastodon` — direct API (env vars above)
+`tiktok` `instagram` `snapchat` `youtube` — video platforms; script printed, post manually
 
 ## Tests
 

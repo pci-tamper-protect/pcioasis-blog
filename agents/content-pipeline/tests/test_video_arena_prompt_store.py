@@ -79,6 +79,6 @@ def test_review_html_has_editable_prompt(tmp_path):
     html = build_review_html(arena, manifest, api_base="/arena")
     assert 'id="shared-prompt-text"' in html
     assert "Edit me" in html
-    assert "save-prompt" in html
-    assert "Save" in html
-    assert "Regenerate from clapper" in html
+    assert "prompt-save-regenerate-btn" in html
+    assert "Save and Regenerate" in html
+    assert "rebuild-from-clapper-btn" in html

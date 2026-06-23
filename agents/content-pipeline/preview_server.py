@@ -351,16 +351,37 @@ def _arena_action_response(start_response, message: str, *, reload: bool = True)
     return _json_response(start_response, {"ok": True, "reload": reload, "message": message})
 
 
+def _reload_sora_creds(post_dir: Path) -> None:
+    """Refresh AZURE_SORA_* from /tmp/sora.json before each arena regen."""
+    from video_arena.credential_bootstrap import ensure_sora_env
+
+    if ensure_sora_env(post_dir=post_dir):
+        dep = os.environ.get("AZURE_SORA_DEPLOYMENT", "sora-2")
+        ep = os.environ.get("AZURE_SORA_ENDPOINT", "")
+        print(
+            f"[arena] Sora creds loaded (deployment={dep}, endpoint={ep})",
+            file=sys.stderr,
+        )
+
+
 def wsgi_app(post_dir: Path):
     """Return a minimal WSGI application."""
+    post_dir = post_dir.resolve()
+    _reload_sora_creds(post_dir)
+
     from video_arena.arena_actions import (
         rebuild_prompt_from_clapper,
         regenerate_all_provider_videos,
+        regenerate_provider_thumbnails,
         regenerate_provider_video,
         run_final_pass,
     )
     from video_arena.prompt_store import save_arena_prompt, save_final_pass_brief
-    from video_arena.review import build_review_html, load_arena_manifest
+    from video_arena.review import (
+        build_review_html,
+        load_arena_manifest,
+        write_review_html,
+    )
     from video_arena.thumbnails import apply_thumbnail_selection
 
     post_dir = post_dir.resolve()
@@ -391,6 +412,22 @@ def wsgi_app(post_dir: Path):
                     )
                 action = parts[1]
                 try:
+                    if action == "save-prompt":
+                        prompt = payload.get("prompt")
+                        if not prompt or not str(prompt).strip():
+                            raise ValueError("missing prompt")
+                        text = str(prompt)
+                        save_arena_prompt(arena_dir, text)
+                        return _json_response(
+                            start_response,
+                            {"ok": True, "message": "Script saved", "bytes": len(text)},
+                        )
+                    if action == "save-final-pass-brief":
+                        brief = payload.get("brief")
+                        if brief is None:
+                            raise ValueError("missing brief")
+                        save_final_pass_brief(arena_dir, str(brief))
+                        return _json_response(start_response, {"ok": True})
                     if action == "regenerate-prompt":
                         if payload.get("prompt"):
                             save_arena_prompt(arena_dir, str(payload["prompt"]))
@@ -398,22 +435,74 @@ def wsgi_app(post_dir: Path):
                         return _arena_action_response(
                             start_response, "Prompt rebuilt from clapper.txt"
                         )
+                    if action == "save-provider-briefs":
+                        pid = payload.get("provider_id")
+                        if not pid:
+                            raise ValueError("missing provider_id")
+                        from video_arena.provider_briefs import (
+                            save_thumbnail_brief,
+                            save_video_brief,
+                        )
+
+                        sub = arena_dir / str(pid)
+                        if "video_brief" in payload:
+                            save_video_brief(sub, str(payload.get("video_brief") or ""))
+                        if "thumbnail_brief" in payload:
+                            save_thumbnail_brief(
+                                sub, str(payload.get("thumbnail_brief") or "")
+                            )
+                        return _json_response(start_response, {"ok": True})
                     if action == "regenerate-provider":
                         pid = payload.get("provider_id")
                         if not pid:
                             raise ValueError("missing provider_id")
-                        if payload.get("prompt"):
+                        if str(pid) == "azure_sora":
+                            _reload_sora_creds(post_dir)
+                        if "prompt" in payload and str(payload.get("prompt", "")).strip():
                             save_arena_prompt(arena_dir, str(payload["prompt"]))
-                        regenerate_provider_video(post_dir, arena_dir, str(pid))
+                        regenerate_provider_video(
+                            post_dir,
+                            arena_dir,
+                            str(pid),
+                            video_brief=str(payload.get("video_brief", "")),
+                        )
                         return _arena_action_response(
-                            start_response, f"Regenerated {pid} video + thumbnails"
+                            start_response, f"Video regenerated ({pid})"
+                        )
+                    if action == "regenerate-thumbnails":
+                        pid = payload.get("provider_id")
+                        if not pid:
+                            raise ValueError("missing provider_id")
+                        meta = regenerate_provider_thumbnails(
+                            arena_dir,
+                            str(pid),
+                            thumbnail_brief=str(payload.get("thumbnail_brief", "")),
+                        )
+                        manifest = load_arena_manifest(arena_dir)
+                        if manifest:
+                            write_review_html(
+                                arena_dir,
+                                manifest,
+                                href_for=lambda p: f"/arena/{p}/video.mp4",
+                                thumb_href_for=lambda p, rel: f"/arena/{p}/{rel}",
+                                back_href="/",
+                                api_base="/arena",
+                            )
+                        count = int(meta.get("count", 0))
+                        label = "candidate" if count == 1 else "candidates"
+                        return _arena_action_response(
+                            start_response,
+                            f"Thumbnails regenerated ({count} {label})",
                         )
                     if action == "regenerate-providers":
+                        _reload_sora_creds(post_dir)
                         ids = payload.get("provider_ids")
-                        if payload.get("prompt"):
-                            save_arena_prompt(arena_dir, str(payload["prompt"]))
+                        shared = str(payload.get("prompt", ""))
                         ran = regenerate_all_provider_videos(
-                            post_dir, arena_dir, ids
+                            post_dir,
+                            arena_dir,
+                            ids,
+                            shared_prompt=shared if shared.strip() else None,
                         )
                         return _arena_action_response(
                             start_response,
@@ -430,6 +519,12 @@ def wsgi_app(post_dir: Path):
                         return _arena_action_response(
                             start_response, "Final pass complete (brief + staged video)"
                         )
+                    return _json_response(
+                        start_response,
+                        {"error": f"unknown arena action: {action}"},
+                        "404 Not Found",
+                        status="404 Not Found",
+                    )
                 except (FileNotFoundError, ValueError) as exc:
                     return _json_response(
                         start_response,
@@ -443,69 +538,6 @@ def wsgi_app(post_dir: Path):
                         "500 Internal Server Error",
                         status="500 Internal Server Error",
                     )
-
-            if (
-                len(parts) == 2
-                and parts[1] == "save-final-pass-brief"
-                and environ.get("REQUEST_METHOD") == "POST"
-            ):
-                try:
-                    length = int(environ.get("CONTENT_LENGTH", "0"))
-                except ValueError:
-                    length = 0
-                raw = environ["wsgi.input"].read(length) if length else b"{}"
-                try:
-                    payload = json.loads(raw.decode("utf-8") or "{}")
-                except json.JSONDecodeError:
-                    return _json_response(
-                        start_response,
-                        {"error": "invalid JSON"},
-                        "400 Bad Request",
-                    )
-                brief = payload.get("brief")
-                if brief is None:
-                    return _json_response(
-                        start_response,
-                        {"error": "missing brief"},
-                        "400 Bad Request",
-                    )
-                save_final_pass_brief(arena_dir, str(brief))
-                return _json_response(start_response, {"ok": True})
-
-            if (
-                len(parts) == 2
-                and parts[1] == "save-prompt"
-                and environ.get("REQUEST_METHOD") == "POST"
-            ):
-                try:
-                    length = int(environ.get("CONTENT_LENGTH", "0"))
-                except ValueError:
-                    length = 0
-                raw = environ["wsgi.input"].read(length) if length else b"{}"
-                try:
-                    payload = json.loads(raw.decode("utf-8") or "{}")
-                except json.JSONDecodeError:
-                    return _json_response(
-                        start_response,
-                        {"error": "invalid JSON"},
-                        "400 Bad Request",
-                    )
-                prompt = payload.get("prompt")
-                if not prompt or not str(prompt).strip():
-                    return _json_response(
-                        start_response,
-                        {"error": "missing prompt"},
-                        "400 Bad Request",
-                    )
-                try:
-                    save_arena_prompt(arena_dir, str(prompt))
-                except ValueError as exc:
-                    return _json_response(
-                        start_response,
-                        {"error": str(exc)},
-                        "400 Bad Request",
-                    )
-                return _json_response(start_response, {"ok": True})
 
             if len(parts) >= 2 and parts[1] == "final-pass":
                 fp_video = arena_dir / "final_pass" / "video.mp4"
@@ -667,6 +699,14 @@ def main() -> None:
     if (arena_dir / "manifest.json").is_file():
         print(f"  Arena:   http://localhost:{args.port}/arena")
     print("Press Ctrl-C to stop.")
+    repo = args.post_dir.resolve()
+    for _ in range(8):
+        if (repo / "deploy" / "secrets" / "export-sora.sh").is_file():
+            print('  Sora:    eval "$(./deploy/secrets/export-sora.sh)" before regen if azure_sora fails')
+            break
+        if repo.parent == repo:
+            break
+        repo = repo.parent
 
     httpd = make_server("0.0.0.0", args.port, wsgi_app(args.post_dir.resolve()))
     try:

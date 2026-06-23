@@ -291,8 +291,21 @@ def apply_thumbnail_selection(provider_dir: Path, choice_id: str) -> Path:
     if not src.is_file():
         raise FileNotFoundError(f"Missing candidate file {src}")
 
+    from video_arena.poster_transform import poster_options_from_brief, transform_poster_image
+    from video_arena.provider_briefs import load_thumbnail_brief
+
+    thumb_brief = load_thumbnail_brief(provider_dir)
+    opts = poster_options_from_brief(provider_dir.name, choice_id, thumb_brief)
     poster = provider_dir / "poster.jpg"
-    shutil.copy2(src, poster)
+    if opts["dewarp_phone"] or opts["crop_top"]:
+        transform_poster_image(
+            src,
+            poster,
+            dewarp_phone=opts["dewarp_phone"],
+            crop_top=opts["crop_top"],
+        )
+    else:
+        shutil.copy2(src, poster)
     data["selected"] = choice_id
     (provider_dir / "thumbnails.json").write_text(
         json.dumps(data, indent=2) + "\n", encoding="utf-8"

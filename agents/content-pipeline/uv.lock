@@ -769,6 +769,11 @@ video-arena = [
     { name = "replicate" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "anthropic", specifier = ">=0.40.0" },
@@ -785,6 +790,9 @@ requires-dist = [
     { name = "requests", marker = "extra == 'social'", specifier = ">=2.31" },
 ]
 provides-extras = ["dev", "gemini", "video-arena", "social"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=9.0.3" }]
 
 [[package]]
 name = "playwright"

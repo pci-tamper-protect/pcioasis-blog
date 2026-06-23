@@ -27,7 +27,7 @@ def missing_gemini_help() -> str:
     )
 
 
-def make_gemini_client():
+def make_gemini_client() -> "tuple[genai.Client, Backend]":
     """Return (client, backend). Prefers Vertex when GOOGLE_CLOUD_PROJECT is set."""
     from google import genai
 

@@ -10,7 +10,9 @@ from pathlib import Path
 CROP_KEEP_TOP_NUM = 2
 CROP_KEEP_TOP_DEN = 5
 
-# Approximate dewarp for tilted phone-in-hand (720×~512 after crop). Tune per shot if needed.
+# Approximate dewarp for tilted phone-in-hand. Pixel coords are calibrated for a 720-wide
+# input (after the top-crop produces 720×~512). They will be wrong for other widths.
+# To generalize, rewrite as ffmpeg expressions: x0=iw*0.07:y0=ih*0.05:x1=iw*0.93:... etc.
 PHONE_PERSPECTIVE = (
     "perspective="
     "x0=50:y0=25:x1=670:y1=15:"

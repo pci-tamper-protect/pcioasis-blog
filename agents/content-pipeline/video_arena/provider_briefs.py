@@ -34,7 +34,12 @@ def load_thumbnail_brief(provider_dir: Path) -> str:
 
 def save_thumbnail_brief(provider_dir: Path, text: str) -> None:
     provider_dir.mkdir(parents=True, exist_ok=True)
-    (provider_dir / THUMBNAIL_BRIEF_FILE).write_text(text, encoding="utf-8")
+    path = provider_dir / THUMBNAIL_BRIEF_FILE
+    if not text.strip():
+        if path.is_file():
+            path.unlink()
+        return
+    path.write_text(text, encoding="utf-8")
 
 
 def resolve_provider_video_prompt(shared_prompt: str, provider_dir: Path) -> str:

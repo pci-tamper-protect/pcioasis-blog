@@ -10,6 +10,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 DEFAULT_SCRIPT_MODEL = "gemini-2.5-flash"
 DEFAULT_TTS_MODEL = "gemini-2.5-flash-preview-tts"
 HOST_A = "Alex"
@@ -39,8 +41,6 @@ def parse_frontmatter(text: str) -> tuple[dict[str, Any], str]:
     parts = text.split("---", 2)
     if len(parts) < 3:
         return {}, text.strip()
-    import yaml
-
     try:
         meta = yaml.safe_load(parts[1]) or {}
     except yaml.YAMLError:
@@ -182,15 +182,15 @@ def run_audio_overview(
     manifest = {
         "generated_at": datetime.now(UTC).isoformat(),
         "title": title,
-        "post_dir": str(post_dir),
+        "post_slug": post_dir.name,
         "backend": backend,
         "script_model": script_model,
         "tts_model": tts_model if not skip_tts else None,
         "hosts": [HOST_A, HOST_B],
         "status": status,
         "message": message,
-        "script_path": str(out_dir / "script.txt"),
-        "audio_path": str(wav_path) if wav_path.is_file() else None,
+        "script_path": "script.txt",
+        "audio_path": "overview.wav" if wav_path.is_file() else None,
     }
     (out_dir / "manifest.json").write_text(
         json.dumps(manifest, indent=2) + "\n", encoding="utf-8"

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+import importlib.util
 import os
-import sys
 from pathlib import Path
 
 
@@ -41,18 +41,18 @@ def ensure_sora_env(*, repo_root: Path | None = None, post_dir: Path | None = No
         root = find_repo_root(Path.cwd())
 
     if root is not None:
-        secrets_dir = root / "deploy" / "secrets"
-        if str(secrets_dir) not in sys.path:
-            sys.path.insert(0, str(secrets_dir))
-
+        config_path = root / "deploy" / "secrets" / "load_ai_config.py"
         try:
-            from load_ai_config import apply_sora_to_environ, load_sora_config
-
+            spec = importlib.util.spec_from_file_location("load_ai_config", config_path)
+            if spec is None or spec.loader is None:
+                raise ImportError(f"cannot load {config_path}")
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)  # type: ignore[union-attr]
             try:
-                cfg, raw = load_sora_config()
+                cfg, raw = mod.load_sora_config()
             except FileNotFoundError:
-                cfg, raw = load_sora_config(prefer_keychain=True)
-            apply_sora_to_environ(cfg, raw)
+                cfg, raw = mod.load_sora_config(prefer_keychain=True)
+            mod.apply_sora_to_environ(cfg, raw)
             return bool(os.environ.get("AZURE_SORA_ENDPOINT"))
         except (FileNotFoundError, ImportError, ValueError):
             pass

@@ -188,6 +188,7 @@ async def browser_login(platform: str) -> None:
     from playwright.async_api import async_playwright, Error as PlaywrightError
 
     SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
+    SESSIONS_DIR.chmod(0o700)
     session_file = SESSIONS_DIR / f"{platform}.json"
     login_url = LOGIN_URLS.get(platform, f"https://www.{platform}.com")
 

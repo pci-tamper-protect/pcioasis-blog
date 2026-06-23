@@ -13,6 +13,10 @@ from typing import Any
 SORA_IDS = frozenset({"azure_sora", "azure_sora_v1"})
 VEO_IDS = frozenset({"vertex_veo"})
 
+# Target output resolution for arena vertical video (9:16 TikTok/Reels).
+ARENA_WIDTH = 720
+ARENA_HEIGHT = 1280
+
 
 def _resolve_sora_id(arena_dir: Path) -> str:
     for pid in SORA_IDS:
@@ -45,8 +49,8 @@ def _sora_video_filter_chain(visual_brief: str, sora_id: str) -> str:
         parts.append(vf)
     parts.extend(
         [
-            "scale=720:1280:force_original_aspect_ratio=decrease",
-            "pad=720:1280:(ow-iw)/2:(oh-ih)/2",
+            f"scale={ARENA_WIDTH}:{ARENA_HEIGHT}:force_original_aspect_ratio=decrease",
+            f"pad={ARENA_WIDTH}:{ARENA_HEIGHT}:(ow-iw)/2:(oh-ih)/2",
             "setsar=1",
         ]
     )
@@ -189,8 +193,8 @@ def combine_sora_then_veo(
     offset = max(0.0, sora_seconds - xfade_seconds)
     fc = (
         f"[0:v]{sora_chain},trim=duration={sora_seconds},setpts=PTS-STARTPTS[v0];"
-        f"[1:v]fps=30,scale=720:1280:force_original_aspect_ratio=decrease,"
-        f"pad=720:1280:(ow-iw)/2:(oh-ih)/2,setsar=1,trim=duration={veo_seconds},"
+        f"[1:v]fps=30,scale={ARENA_WIDTH}:{ARENA_HEIGHT}:force_original_aspect_ratio=decrease,"
+        f"pad={ARENA_WIDTH}:{ARENA_HEIGHT}:(ow-iw)/2:(oh-ih)/2,setsar=1,trim=duration={veo_seconds},"
         f"setpts=PTS-STARTPTS[v1];"
         f"[v0][v1]xfade=transition=fade:duration={xfade_seconds}:offset={offset}[vout];"
         f"[2:a]aresample=48000,atrim=duration={total_seconds},asetpts=PTS-STARTPTS[aout]"

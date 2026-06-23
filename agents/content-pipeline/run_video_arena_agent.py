@@ -66,6 +66,10 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.print_directions:
+        if args.print_directions not in ROLE_SPECS:
+            parser.error(
+                f"unknown role {args.print_directions!r}; choices: {sorted(ROLE_SPECS)}"
+            )
         print(get_role_spec(args.print_directions))
         return
 

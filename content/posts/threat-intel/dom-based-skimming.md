@@ -1,7 +1,7 @@
 ---
 title: "DOM-Based Skimming: Real-Time Payment Interception Without Form Submission"
 slug: "dom-based-skimming"
-date: 2026-06-24
+date: 2026-06-23
 description: "A deep-dive into Lab 2 — how DOM-based skimming attacks intercept payment data in real-time using MutationObserver, form overlays, and Shadow DOM, before the user even hits submit."
 categories: ["threat-intel"]
 tags: ["dom-skimming", "e-skimming", "javascript", "payment-security", "lab-writeup", "mutation-observer", "shadow-dom", "banking-trojan"]

@@ -1,11 +1,11 @@
 ---
 title: "Browser Extension Hijacking: The Invisible Supply Chain Attack"
 slug: "supply-chain-attacks-extension-hijacking"
-date: 2026-03-01
+date: 2026-06-24
 description: "A deep-dive into Lab 3 — how attackers compromise browser extensions to silently harvest payment data, passwords, and session cookies from millions of users across every website they visit."
 categories: ["threat-intel"]
 tags: ["supply-chain", "browser-extension", "chrome-extension", "e-skimming", "javascript", "lab-writeup", "permission-escalation"]
-author: "PCI Oasis"
+author: "Sri Chinmai"
 canonicalURL: "https://blog.pcioasis.com/posts/threat-intel/supply-chain-attacks-extension-hijacking/"
 ShowToc: true
 TocOpen: true

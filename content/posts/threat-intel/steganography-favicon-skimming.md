@@ -1,7 +1,7 @@
 ---
 title: "Favicon Trojan: Hiding JavaScript Skimmers Inside Images with Steganography"
 slug: "steganography-favicon-skimming"
-date: 2026-06-24
+date: 2026-06-23
 description: "A deep-dive into Lab 4 — how attackers embed fully functional JavaScript skimmers inside a site's favicon using steganographic encoding, bypassing script-focused security controls entirely."
 categories: ["threat-intel"]
 tags: ["steganography", "favicon", "canvas-api", "e-skimming", "javascript", "lab-writeup", "evasion", "data-exfiltration"]
